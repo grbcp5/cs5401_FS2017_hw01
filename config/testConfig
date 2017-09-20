@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <config>
-  <testData1>12345</testData1>
-  <testData2>98765</testData2>
+  <testInteger>12345</testInteger>
+  <testDouble>98.65</testDouble>
+  <testString>Hahaha</testString>
 </config>

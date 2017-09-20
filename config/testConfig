@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<config>
+  <testData1>12345</testData1>
+  <testData2>98765</testData2>
+</config>

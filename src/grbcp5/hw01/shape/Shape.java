@@ -10,8 +10,7 @@ class InitializerReturnValue {
   InitializerReturnValue(
     boolean[][] matrix,
     int startRow,
-    int startCol )
-  {
+    int startCol ) {
 
     this.matrix = matrix;
     this.startRow = startRow;
@@ -59,19 +58,19 @@ public class Shape {
 
   }
 
-  public Shape( boolean[][] matrix, int startRow, int startCol ) {
+  public Shape( boolean[][] initMatrix, int startRow, int startCol ) {
 
     /* Initialize */
     this.initFromStringDefiniton = false;
     this.definition = null;
 
     /* Copy matrix */
-    this.matrix = new boolean[ matrix.length ][ matrix[ 0 ].length ];
-    for( int r = 0; r < this.matrix.length; r++ ) {
+    this.matrix = new boolean[ initMatrix.length ][ initMatrix[ 0 ].length ];
+    for ( int r = 0; r < this.matrix.length; r++ ) {
       System.arraycopy(
-        this.matrix[ r ],
+        initMatrix[ r ],
         0,
-        matrix[ r ],
+        this.matrix[ r ],
         0,
         this.matrix[ 0 ].length
       );
@@ -79,6 +78,23 @@ public class Shape {
 
     this.startRow = startRow;
     this.startCol = startCol;
+
+  }
+
+  public Shape( int numRows, int numCols ) {
+
+    this.initFromStringDefiniton = false;
+    this.definition = null;
+
+    this.matrix = new boolean[ numRows ][ numCols ];
+
+    this.startRow = -1;
+    this.startCol = -1;
+  }
+
+  public Shape( Shape copy ) {
+
+    this( copy.matrix, copy.getStartRow(), copy.getStartCol() );
 
   }
 
@@ -94,7 +110,7 @@ public class Shape {
     boolean[][] copy
       = new boolean[ this.matrix.length ][ this.matrix[ 0 ].length ];
 
-    for( int r = 0; r < this.matrix.length; r++ ) {
+    for ( int r = 0; r < this.matrix.length; r++ ) {
       System.arraycopy(
         this.matrix[ r ],
         0,
@@ -137,6 +153,108 @@ public class Shape {
     }
 
     return 0;
+  }
+
+  public Shape rotate( int rotaiton ) {
+
+    /* Local Variables */
+    Shape newShape = null;
+    boolean[][] newShapeDefinintion;
+
+    if ( this.initFromStringDefiniton ) {
+      newShape = new Shape( this.getDefinition() );
+    } else {
+
+      if ( this.getStartCol() >= 0 && this.getStartRow() >= 0 ) {
+        newShape =
+          new Shape( this.matrix, this.getStartRow(), this.getStartCol() );
+      } else {
+        newShape = new Shape( this );
+      }
+    }
+
+    rotaiton = rotaiton % 4;
+
+    if ( rotaiton == 0 ) {
+      return newShape;
+    }
+
+    int newStartCol = -1;
+    int newStartRow = -1;
+
+    for ( int i = 0; i < ( 4 - rotaiton ); i++ ) {
+
+      newShapeDefinintion =
+        new boolean[ newShape.getNumCols() ][ newShape.getNumRows() ];
+      for ( int r = 0; r < newShape.getNumRows(); r++ ) {
+        for ( int c = 0; c < newShape.getNumCols(); c++ ) {
+          newShapeDefinintion[ ( newShape.getNumCols() - 1 ) - c ][ r ] =
+            newShape.matrix[ r ][ c ];
+        }
+      }
+
+      if ( newShape.getStartCol() >= 0 && newShape.getStartRow() >= 0 ) {
+        newStartRow =
+          ( newShape.getNumCols() - 1 ) - ( newShape.getStartCol() );
+        newStartCol = newShape.getStartRow();
+
+        newShape = new Shape( newShapeDefinintion, newStartRow,
+                              newStartCol );
+      } else {
+
+        newShape = new Shape( newShapeDefinintion, -1, -1 );
+      }
+
+    }
+
+    return newShape;
+
+
+  }
+
+  /**
+   * Returns a shape that is the given shape inside of the calling shape.
+   * <p>
+   * NOTE: If the two shapes attempt to populate the same cell an
+   * OverlapException will be thrown. If the inner shape "falls off the edge" of
+   * the outer shape a FallOff exception will be thrown.
+   *
+   * @param innerShape Shape to be "eaten" or placed inside of calling shape.
+   * @param row        row of inner shape to be placed at.
+   * @param col        column of inner shape to be placed at.
+   * @return The new combined shapes.
+   */
+  public Shape eat( Shape innerShape, int row, int col ) throws OverlapException, FallOffExcpetion {
+    boolean[][] newShapeDefiniton;
+    newShapeDefiniton = this.getMatrix();
+
+    for ( int r = 0; r < innerShape.getNumRows(); r++ ) {
+      for ( int c = 0; c < innerShape.getNumCols(); c++ ) {
+
+        if ( innerShape.matrix[ r ][ c ] ) {
+
+          /* If this will fall off the outer shape... */
+          if ( !( 0 <= ( row + r ) && ( row + r ) < newShapeDefiniton.length ) ||
+            !( 0 <= ( col + c ) && ( col + c ) < newShapeDefiniton[ row + r ].length ) ) {
+
+            /* ... throw fall off excpetion */
+            throw new FallOffExcpetion( "[" + r + "][" + c + "] Falls off the outer shape" );
+          }
+
+          /* If this will overlap with the inner shape... */
+          if ( newShapeDefiniton[ row + r ][ col + c ] ) {
+
+            /* ... throw overlap exception */
+            throw new OverlapException( "[" + r + "][" + c + "] overlaps with the outer shape" );
+          }
+
+          newShapeDefiniton[ row + r ][ col + c ] = true;
+
+        } /* If inner shape populates this square */
+      } /* For each inner shape column */
+    } /* For each inner shape row */
+
+    return new Shape( newShapeDefiniton, this.startRow, this.startCol );
   }
 
   /* Private helper functions */
@@ -245,7 +363,7 @@ public class Shape {
 
   private static ShapeDefinitionToken[] parseInput( String input ) throws
     InvalidMagnitude, InvalidDirection {
-    LinkedList<ShapeDefinitionToken> result = new LinkedList<>();
+    LinkedList< ShapeDefinitionToken > result = new LinkedList<>();
     ShapeDefinitionToken currentToken;
 
     String[] pieces = input.split( " " );
@@ -258,7 +376,7 @@ public class Shape {
       }
     }
 
-    return result.toArray(new ShapeDefinitionToken[result.size()]);
+    return result.toArray( new ShapeDefinitionToken[ result.size() ] );
   }
 
   @Override
@@ -296,7 +414,8 @@ public class Shape {
 
     Shape shape = ( Shape ) o;
 
-    if ( this.getNumRows() != shape.getNumRows() || this.getNumCols() != shape.getNumCols() ) {
+    if ( this.getNumRows() != shape.getNumRows() ||
+      this.getNumCols() != shape.getNumCols() ) {
       return false;
     }
 

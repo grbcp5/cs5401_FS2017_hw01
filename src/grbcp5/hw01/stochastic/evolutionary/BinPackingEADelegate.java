@@ -26,7 +26,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   }
 
   @Override
-  public Individual repair( Individual i, int loci ) {
+  public Individual repair( Individual i, int lowLoci, int highLoci ) {
     BinPackingSolution sol = ( BinPackingSolution )( i );
 
     return sol;

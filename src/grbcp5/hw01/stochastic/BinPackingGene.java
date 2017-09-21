@@ -7,6 +7,12 @@ public final class BinPackingGene extends Gene{
   private final int y;
   private final int rotation;
 
+  public BinPackingGene() {
+    this.x = -1;
+    this.y = -1;
+    this.rotation = -1;
+  }
+
   public BinPackingGene( int x, int y, int rotation ) {
     this.x = x;
     this.y = y;

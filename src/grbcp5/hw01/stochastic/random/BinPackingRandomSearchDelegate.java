@@ -4,10 +4,7 @@ package grbcp5.hw01.stochastic.random;
 import grbcp5.hw01.GRandom;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.shape.Shape;
-import grbcp5.hw01.stochastic.BinPackingGene;
-import grbcp5.hw01.stochastic.BinPackingSolution;
-import grbcp5.hw01.stochastic.Gene;
-import grbcp5.hw01.stochastic.Individual;
+import grbcp5.hw01.stochastic.*;
 
 import java.util.Map;
 import java.util.Random;
@@ -16,16 +13,38 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
   private Map<String, Object> parameters;
   private BinPackingProblemDefinition problemDefinition;
+  private int numFitnessEvalsLeft;
 
   public BinPackingRandomSearchDelegate( Map<String, Object> parameters,
                                          BinPackingProblemDefinition pd ){
     this.parameters = parameters;
     this.problemDefinition = pd;
+    this.numFitnessEvalsLeft = ( Integer ) ( parameters.get( "fitnessEvals" ) );
   }
 
   @Override
   public int getGenePoolSize() {
-    return problemDefinition.getNumShapes();
+    return this.problemDefinition.getNumShapes();
+  }
+
+  @Override
+  public Individual getInitialIndividual() {
+
+    BinPackingGene[] genes
+      = new BinPackingGene[ this.problemDefinition.getNumShapes() ];
+    for ( int g = 0; g < this.problemDefinition.getNumShapes(); g++ ) {
+      genes[ g ] = new BinPackingGene();
+    }
+
+    return new BinPackingSolution( genes,
+                                   this.problemDefinition.getShapes(),
+                                   this.problemDefinition.getSheetHeight(),
+                                   this.problemDefinition.getSheetWidth(),
+                                   new Shape(
+                                     this.problemDefinition.getSheetHeight(),
+                                     this.problemDefinition.getSheetWidth()
+                                   )
+    );
   }
 
   @Override
@@ -64,22 +83,49 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
       - ( tryShape.getNumCols() - tryShape.getStartCol() );
     tryCol = randInt( rnd, minCol, maxCol );
 
+    /* Return generated random gene configuration */
     return new BinPackingGene( tryCol, tryRow, tryRotation );
   }
 
+  /* Private helper for getRandomGene */
   private static int randInt( Random rnd, int min, int max ) {
     return rnd.nextInt( ( max - min ) + 1 ) + min;
   }
 
   @Override
-  public Individual repair( Individual i, int loci ) {
+  public Individual repair( Individual i, int lowLoci, int highLoci ) {
     BinPackingSolution sol = ( BinPackingSolution )( i );
 
     /* Local variables */
-    boolean solutionValid;
+    BinPackingSolution resultingSoluiton;
+    BinPackingSolution newSolution = null;
 
+    /* Initialize */
+    resultingSoluiton = ( BinPackingSolution )( i.getCopy() );
+    newSolution = BinPackingSolutionChecker.checkSolution(
+      resultingSoluiton,
+      lowLoci,
+      highLoci
+    );
 
-    return sol;
+    /* Until a valid solution is found */
+    while ( newSolution == null ) {
+
+      /* Refil each location with a new random gene */
+      for( int loci = lowLoci; loci <= highLoci; loci++ ) {
+        resultingSoluiton.setGene( loci, this.getRandomGene( loci ) );
+      }
+
+      /* Check to see if that solution is valid */
+      newSolution = BinPackingSolutionChecker.checkSolution(
+        resultingSoluiton,
+        lowLoci,
+        highLoci
+      );
+
+    }
+
+    return newSolution;
   }
 
   @Override
@@ -92,12 +138,15 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
   @Override
   public boolean shouldContinue() {
-    return false;
+    return ( numFitnessEvalsLeft-- > 0 );
   }
 
   @Override
   public void handleNewIndividual( Individual i ) {
+    BinPackingSolution sol = ( BinPackingSolution )( i );
 
+    System.out.println( "New Solution Recieved" );
+    System.out.println( sol.getResultingSheet() );
   }
 
   @Override
@@ -110,4 +159,5 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
     return fitness1.compareTo( fitness2 );
   }
+
 }

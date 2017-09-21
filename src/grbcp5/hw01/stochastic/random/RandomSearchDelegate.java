@@ -8,8 +8,8 @@ public abstract class RandomSearchDelegate extends StochasticDelegate {
 
   public abstract int getGenePoolSize();
 
-  public abstract Gene getRandomGene( int loci );
+  public abstract Individual getInitialIndividual();
 
-  public abstract Individual repair( Individual i, int lowLoci, int highLoci );
+  public abstract Gene getRandomGene( int loci );
 
 }

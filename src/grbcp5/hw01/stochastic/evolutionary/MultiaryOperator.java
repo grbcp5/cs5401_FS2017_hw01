@@ -78,7 +78,7 @@ public class MultiaryOperator {
         tryGene = currrentIndividual.getGenes()[ curIdx ].getCopy();
         resultingIndividual.setGene( curIdx, tryGene );
 
-        delegate.repair( resultingIndividual, curIdx );
+        delegate.repair( resultingIndividual, curIdx, curIdx );
 
       }
     }

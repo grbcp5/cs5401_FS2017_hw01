@@ -50,6 +50,19 @@ public final class BinPackingSolution extends Individual {
 
 
   @Override
+  public boolean setGene( int loci, Gene gene ) {
+    boolean superResult = super.setGene( loci, gene );
+
+    if( !superResult ) {
+      return false;
+    }
+
+
+    return true;
+
+  }
+
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
 

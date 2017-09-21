@@ -6,25 +6,20 @@ import grbcp5.hw01.shape.Shape;
 
 public class BinPackingSolutionChecker {
 
-  public BinPackingSolution checkSolution( BinPackingSolution sol, int
-    lowLoci, int highLoci )  {
+  public static BinPackingSolution checkSolution(
+    BinPackingSolution sol,
+    int lowLoci,
+    int highLoci )  {
 
     /* Local Variables */
-    Shape[] shapes;
-    BinPackingGene[] genes;
     Shape intermediateSheet;
     BinPackingSolution newSol;
 
     /* Initialize */
-    shapes = sol.getShapes();
-    genes = new BinPackingGene[ sol.getGenes().length ];
-    for ( int i = 0; i < sol.getGenes().length; i++ ) {
-      genes[ i ] = ( BinPackingGene )( sol.getGenes()[ i ] );
-    }
-    newSol = new BinPackingSolution( genes, sol.getShapes(), sol
-      .getSheetHeight(), sol.getSheetWidth(), sol.getResultingSheet() );
+    newSol = ( BinPackingSolution )( sol.getCopy() );
 
-    if ( lowLoci < 0 || shapes.length < highLoci || genes.length < highLoci ) {
+    if ( lowLoci < 0 || newSol.getShapes().length < highLoci || newSol.getShapes().length <
+      highLoci ) {
       return null;
     }
 
@@ -35,25 +30,29 @@ public class BinPackingSolutionChecker {
 
     for ( int i = lowLoci; i <= highLoci; i++ ) {
 
-      rotatedShape = shapes[ i ].rotate( genes[ i ].getRotation() );
+      rotatedShape = newSol.getShapes()[ i ].rotate(
+        ( ( BinPackingGene )( newSol.getGenes()[ i ] ) ).getRotation()
+      );
 
-      shapeRowIdx = genes[ i ].getY() - rotatedShape.getStartRow();
-      shapeColIdx = genes[ i ].getX() - rotatedShape.getStartCol();
+      shapeRowIdx = ( ( BinPackingGene )( newSol.getGenes()[ i ] ) ).getY()
+        - rotatedShape.getStartRow();
+      shapeColIdx = ( ( BinPackingGene )( newSol.getGenes()[ i ] ) ).getX()
+        - rotatedShape.getStartCol();
 
       try {
-         intermediateSheet = sol.getResultingSheet().eat(
+         intermediateSheet = newSol.getResultingSheet().eat(
            rotatedShape,
            shapeRowIdx,
            shapeColIdx
          );
-         sol.setSheet( intermediateSheet );
+         newSol.setSheet( intermediateSheet );
       } catch ( FallOffExcpetion | OverlapException FOE ) {
         return null;
       }
 
     }
 
-    return null;
+    return newSol;
   }
 
 }

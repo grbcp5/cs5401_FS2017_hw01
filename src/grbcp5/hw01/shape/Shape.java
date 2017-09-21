@@ -257,6 +257,72 @@ public class Shape {
     return new Shape( newShapeDefiniton, this.startRow, this.startCol );
   }
 
+  @Override
+  public String toString() {
+    String result = "";
+
+    /* For each row in the matrix */
+    for ( int r = 0; r < this.getNumRows(); r++ ) {
+      /* For each col in the row */
+      for ( int c = 0; c < this.getNumCols(); c++ ) {
+
+        /* Add value to string */
+        if ( this.matrix[ r ][ c ] ) {
+          result += "#";
+        } else {
+          result += "_";
+        }
+
+      }
+      /* Add newline */
+      result += "\n";
+    }
+
+    return result;
+  }
+
+  @Override
+  public boolean equals( Object o ) {
+    if ( this == o ) {
+      return true;
+    }
+    if ( o == null || getClass() != o.getClass() ) {
+      return false;
+    }
+
+    Shape shape = ( Shape ) o;
+
+    if ( this.getNumRows() != shape.getNumRows() ||
+      this.getNumCols() != shape.getNumCols() ) {
+      return false;
+    }
+
+    for ( int r = 0; r < this.getNumRows(); r++ ) {
+      for ( int c = 0; c < this.getNumCols(); c++ ) {
+        if ( this.matrix[ r ][ c ] != shape.matrix[ r ][ c ] ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  public Shape getCopy() {
+
+    if( this.isInitFromStringDefiniton() ) {
+      return new Shape( this.getDefinition() );
+    }
+
+    return new Shape( this.matrix, this.startRow, this.startCol );
+
+  }
+
+  @Override
+  protected Shape clone() {
+    return this.getCopy();
+  }
+
   /* Private helper functions */
 
   private static InitializerReturnValue createShapeMatrix( String definition ) {
@@ -379,69 +445,5 @@ public class Shape {
     return result.toArray( new ShapeDefinitionToken[ result.size() ] );
   }
 
-  @Override
-  public String toString() {
-    String result = "";
 
-    /* For each row in the matrix */
-    for ( int r = 0; r < this.getNumRows(); r++ ) {
-      /* For each col in the row */
-      for ( int c = 0; c < this.getNumCols(); c++ ) {
-
-        /* Add value to string */
-        if ( this.matrix[ r ][ c ] ) {
-          result += "#";
-        } else {
-          result += "_";
-        }
-
-      }
-      /* Add newline */
-      result += "\n";
-    }
-
-    return result;
-  }
-
-  @Override
-  public boolean equals( Object o ) {
-    if ( this == o ) {
-      return true;
-    }
-    if ( o == null || getClass() != o.getClass() ) {
-      return false;
-    }
-
-    Shape shape = ( Shape ) o;
-
-    if ( this.getNumRows() != shape.getNumRows() ||
-      this.getNumCols() != shape.getNumCols() ) {
-      return false;
-    }
-
-    for ( int r = 0; r < this.getNumRows(); r++ ) {
-      for ( int c = 0; c < this.getNumCols(); c++ ) {
-        if ( this.matrix[ r ][ c ] != shape.matrix[ r ][ c ] ) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  public Shape getCopy() {
-
-    if( this.isInitFromStringDefiniton() ) {
-      return new Shape( this.getDefinition() );
-    }
-
-    return new Shape( this.matrix, this.startRow, this.startCol );
-
-  }
-
-  @Override
-  protected Shape clone() {
-    return this.getCopy();
-  }
 }

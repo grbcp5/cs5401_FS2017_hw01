@@ -57,34 +57,33 @@ public class ConfigFileReader {
     Element element;
 
     /* For each child of the root node */
-    for( int p = 0; p < this.numChildNodes; p++ ) {
+    for ( int p = 0; p < this.numChildNodes; p++ ) {
       currentNode = this.parameterNodeList.item( p );
 
-      if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-        element = ( Element )( currentNode );
+      if ( currentNode.getNodeType() == Node.ELEMENT_NODE ) {
+        element = ( Element ) ( currentNode );
         String nodeText = element.getTextContent();
+        String nodeType = element.getAttribute( "dataType" );
         Object value;
 
-        try {
-
-          /* Try to parse as an integer */
-          value = Integer.parseInt( nodeText );
-
-        } catch ( NumberFormatException e ) {
-
-          try {
-
-            /* Try to parse as a double */
+        switch ( nodeType ) {
+          case "Integer":
+            value = Integer.parseInt( nodeText );
+            break;
+          case "Long":
+            value = Long.parseLong( nodeText );
+            break;
+          case "Double":
             value = Double.parseDouble( nodeText );
-
-          } catch ( NumberFormatException e1 ) {
-
-            /* Just assume string */
+            break;
+          case "Boolean":
+            value = Boolean.parseBoolean( nodeText );
+            break;
+          default:
+            // Assume string
             value = nodeText;
-
-          } /* Try double */
-
-        } /* Try integer */
+            break;
+        }
 
         parameterMap.put( element.getTagName(), value );
       }

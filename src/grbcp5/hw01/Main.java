@@ -1,12 +1,19 @@
 package grbcp5.hw01;
 
 
+import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.input.ConfigFileReader;
+import grbcp5.hw01.input.ProblemDefinitonFileReader;
+import grbcp5.hw01.stochastic.StochasticDelegate;
+import grbcp5.hw01.stochastic.StochasticSearch;
+import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
+import grbcp5.hw01.stochastic.random.RandomSearch;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Random;
 
 public class Main {
 
@@ -31,6 +38,11 @@ public class Main {
 
   }
 
+
+
+
+
+
   public static void main( String[] args ) {
 
     if( args.length < 2 ) {
@@ -40,8 +52,13 @@ public class Main {
     }
 
     /* Local Variables */
+    long randomSeed;
     ConfigFileReader configFileReader;
+    ProblemDefinitonFileReader problemDefinitonFileReader;
     Map< String, Object > parameters;
+    BinPackingProblemDefinition problemDefinition;
+    StochasticSearch searcher;
+    StochasticDelegate delegate;
 
     try {
 
@@ -56,11 +73,36 @@ public class Main {
 
     /* Get parameters */
     parameters = configFileReader.getParameters();
-    Double d = ( Double ) ( parameters.get( "testDouble" ) );
-    Integer i = ( Integer )( parameters.get( "testInteger" ) );
-    String s = ( String )( parameters.get( "testString" ) );
 
-    System.out.println( "Double: " + d + "\nInteger: " + i + "\nString: " + s );
+    /* Set random seed */
+    if( ( Boolean )( parameters.get( "seedSpecified" ) ) ) {
+      randomSeed = ( Long )( parameters.get( "seed" ) );
+    } else {
+      randomSeed = System.currentTimeMillis();
+    }
+    GRandom.setInstance( new Random( randomSeed ) );
+
+    /* Get problem definition */
+    problemDefinitonFileReader = new ProblemDefinitonFileReader( args[ 1 ] );
+    problemDefinition = problemDefinitonFileReader.getProblemDefinition();
+
+    if( parameters.get( "searchType" ).equals( "RandomSearch" )  ) {
+
+      delegate = new BinPackingRandomSearchDelegate(
+        parameters,
+        problemDefinition
+      );
+      searcher = new RandomSearch(
+        ( BinPackingRandomSearchDelegate ) ( delegate )
+      );
+
+    } else {
+      System.out.println( "Cannot handle '" + parameters.get( "searchType" )
+                            + "'." );
+      return;
+    }
+
+    searcher.search();
 
   } /* Main function */
 

@@ -4,10 +4,6 @@ public abstract class Individual {
 
   protected Gene[] genes;
 
-  public Individual( int numGenes ) {
-    this.genes = new Gene[ numGenes ];
-  }
-
   public Individual( Gene[] copyGenes ) {
 
     this.genes = new Gene[ copyGenes.length ];
@@ -42,5 +38,8 @@ public abstract class Individual {
   }
 
   public abstract Individual getCopy();
+
+  @Override
+  public abstract String toString();
 
 }

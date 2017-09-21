@@ -9,5 +9,9 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract Individual mutate( Individual i );
 
+  public abstract Individual[] getInitialPopulation();
+
+  public abstract int getPopulationSize();
+
 
 }

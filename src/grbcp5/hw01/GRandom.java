@@ -7,7 +7,7 @@ public class GRandom {
 
   private static Random instance = null;
 
-  static void setInstance( Random rnd ) {
+  public static void setInstance( Random rnd ) {
     instance = rnd;
   }
 

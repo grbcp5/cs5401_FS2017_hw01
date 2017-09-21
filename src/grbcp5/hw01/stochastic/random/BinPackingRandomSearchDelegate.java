@@ -154,6 +154,10 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     return ( numFitnessEvalsLeft-- > 0 );
   }
 
+  public int getNumFitnessEvalsLeft() {
+    return numFitnessEvalsLeft;
+  }
+
   @Override
   public void handleNewIndividual( Individual i ) {
     BinPackingSolution sol = ( BinPackingSolution ) ( i );

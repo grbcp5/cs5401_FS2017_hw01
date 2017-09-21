@@ -12,6 +12,8 @@ public abstract class StochasticDelegate implements Comparator< Individual> {
 
   public abstract Individual repair( Individual i, int lowLoci, int highLoci );
 
+  public abstract Individual getBestIndividual();
+
   @Override
   public abstract int compare( Individual i1, Individual i2 );
 

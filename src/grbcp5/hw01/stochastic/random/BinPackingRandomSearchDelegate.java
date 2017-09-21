@@ -18,7 +18,6 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
   private double currentBestFitness;
   private int newBestInstanceNumber;
   private long startTime;
-  private long stopTime;
 
   public BinPackingRandomSearchDelegate( Map< String, Object > parameters,
                                          BinPackingProblemDefinition pd ) {
@@ -101,11 +100,10 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
   @Override
   public Individual repair( Individual i, int lowLoci, int highLoci ) {
-    BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
     /* Local variables */
     BinPackingSolution resultingSoluiton;
-    BinPackingSolution newSolution = null;
+    BinPackingSolution newSolution;
 
     /* Initialize */
     resultingSoluiton = ( BinPackingSolution ) ( i.getCopy() );
@@ -145,7 +143,7 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     trimW = resultingSheet.getTrimmedWidth();
     totlW = resultingSheet.getNumCols();
 
-    return ( totlW - trimW ) / new Double( totlW );
+    return ( totlW - trimW ) / ( ( double )( totlW ) );
   }
 
   @Override
@@ -178,8 +176,8 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
     if ( this.numFitnessEvalsLeft % 100 == 0 ) {
 
-      this.stopTime = System.currentTimeMillis();
-      long elapsedTime = this.stopTime - this.startTime;
+      long stopTime = System.currentTimeMillis();
+      long elapsedTime = stopTime - this.startTime;
 
       System.out.println(
         "Run " + parameters.get( "currentRun" ) +

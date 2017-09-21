@@ -19,7 +19,7 @@ public class RandomSearch extends StochasticSearch {
   }
 
   @Override
-  public void search() {
+  public Individual search() {
 
     /* local Variables */
     Random rnd;
@@ -47,6 +47,8 @@ public class RandomSearch extends StochasticSearch {
       delegate.handleNewIndividual( currentIndividual );
 
     }
+
+    return delegate.getBestIndividual();
 
   }
 

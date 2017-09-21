@@ -4,6 +4,8 @@ package grbcp5.hw01;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.input.ConfigFileReader;
 import grbcp5.hw01.input.ProblemDefinitonFileReader;
+import grbcp5.hw01.stochastic.BinPackingSolution;
+import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticDelegate;
 import grbcp5.hw01.stochastic.StochasticSearch;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
@@ -63,6 +65,10 @@ public class Main {
     long startTime;
     long endTime;
     long elapsedTime;
+    Individual runBest;
+    double runBestFitness;
+    Individual currentBest = null;
+    double currentBestFitness = -1;
 
     try {
 
@@ -107,7 +113,15 @@ public class Main {
         );
 
 
-        searcher.search();
+        runBest = searcher.search();
+        runBestFitness = delegate.fitness( runBest );
+
+        if( runBestFitness > currentBestFitness ) {
+          currentBestFitness = runBestFitness;
+          currentBest = runBest;
+
+          System.out.println( "Run produced a better individual." );
+        }
 
       }
 
@@ -115,6 +129,10 @@ public class Main {
 
       elapsedTime = endTime - startTime;
       System.out.println( "Total time: " + elapsedTime );
+      System.out.println( "Best individual (" + currentBestFitness + "): " );
+      System.out.println(
+        ( ( BinPackingSolution )( currentBest ) ).getResultingSheet()
+      );
 
 
     } else {

@@ -176,7 +176,7 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
       );
     }
 
-    if ( this.numFitnessEvalsLeft % 1 == 0 ) {
+    if ( this.numFitnessEvalsLeft % 100 == 0 ) {
 
       this.stopTime = System.currentTimeMillis();
       long elapsedTime = this.stopTime - this.startTime;
@@ -190,6 +190,11 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     }
 
 
+  }
+
+  @Override
+  public Individual getBestIndividual() {
+    return this.currentBest.getCopy();
   }
 
   @Override

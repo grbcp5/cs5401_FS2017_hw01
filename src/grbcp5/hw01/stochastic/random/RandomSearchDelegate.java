@@ -12,4 +12,6 @@ public abstract class RandomSearchDelegate extends StochasticDelegate {
 
   public abstract Gene getRandomGene( int loci );
 
+  public abstract Individual getBestIndividual();
+
 }

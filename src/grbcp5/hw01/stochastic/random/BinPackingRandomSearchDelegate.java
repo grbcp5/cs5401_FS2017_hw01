@@ -11,15 +11,22 @@ import java.util.Random;
 
 public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
-  private Map<String, Object> parameters;
+  private Map< String, Object > parameters;
   private BinPackingProblemDefinition problemDefinition;
   private int numFitnessEvalsLeft;
+  private BinPackingSolution currentBest;
+  private double currentBestFitness;
+  private int newBestInstanceNumber;
+  private long startTime;
+  private long stopTime;
 
-  public BinPackingRandomSearchDelegate( Map<String, Object> parameters,
-                                         BinPackingProblemDefinition pd ){
+  public BinPackingRandomSearchDelegate( Map< String, Object > parameters,
+                                         BinPackingProblemDefinition pd ) {
     this.parameters = parameters;
     this.problemDefinition = pd;
     this.numFitnessEvalsLeft = ( Integer ) ( parameters.get( "fitnessEvals" ) );
+    this.currentBestFitness = -1.0;
+    this.newBestInstanceNumber = 0;
   }
 
   @Override
@@ -37,13 +44,13 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     }
 
     return new BinPackingSolution( genes,
-                                   this.problemDefinition.getShapes(),
-                                   this.problemDefinition.getSheetHeight(),
-                                   this.problemDefinition.getSheetWidth(),
-                                   new Shape(
-                                     this.problemDefinition.getSheetHeight(),
-                                     this.problemDefinition.getSheetWidth()
-                                   )
+      this.problemDefinition.getShapes(),
+      this.problemDefinition.getSheetHeight(),
+      this.problemDefinition.getSheetWidth(),
+      new Shape(
+        this.problemDefinition.getSheetHeight(),
+        this.problemDefinition.getSheetWidth()
+      )
     );
   }
 
@@ -94,14 +101,14 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
   @Override
   public Individual repair( Individual i, int lowLoci, int highLoci ) {
-    BinPackingSolution sol = ( BinPackingSolution )( i );
+    BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
     /* Local variables */
     BinPackingSolution resultingSoluiton;
     BinPackingSolution newSolution = null;
 
     /* Initialize */
-    resultingSoluiton = ( BinPackingSolution )( i.getCopy() );
+    resultingSoluiton = ( BinPackingSolution ) ( i.getCopy() );
     newSolution = BinPackingSolutionChecker.checkSolution(
       resultingSoluiton,
       lowLoci,
@@ -112,7 +119,7 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     while ( newSolution == null ) {
 
       /* Refil each location with a new random gene */
-      for( int loci = lowLoci; loci <= highLoci; loci++ ) {
+      for ( int loci = lowLoci; loci <= highLoci; loci++ ) {
         resultingSoluiton.setGene( loci, this.getRandomGene( loci ) );
       }
 
@@ -132,29 +139,63 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
   public double fitness( Individual i ) {
     BinPackingSolution sol = ( BinPackingSolution ) ( i );
     Shape resultingSheet = sol.getResultingSheet();
+    int trimW;
+    int totlW;
 
-    return resultingSheet.getTrimmedWidth() / resultingSheet.getNumCols();
+    trimW = resultingSheet.getTrimmedWidth();
+    totlW = resultingSheet.getNumCols();
+
+    return ( totlW - trimW ) / new Double( totlW );
   }
 
   @Override
   public boolean shouldContinue() {
+
+    this.startTime = System.currentTimeMillis();
+
     return ( numFitnessEvalsLeft-- > 0 );
   }
 
   @Override
   public void handleNewIndividual( Individual i ) {
-    BinPackingSolution sol = ( BinPackingSolution )( i );
+    BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
-    System.out.println( "New Solution Recieved" );
-    if( this.numFitnessEvalsLeft == 0 ) {
-      System.out.println( sol.getResultingSheet() );
+    /* Local Variables */
+    double solFitness;
+
+    /* Initialize */
+    solFitness = this.fitness( sol );
+
+    if ( solFitness > currentBestFitness ) {
+      this.newBestInstanceNumber++;
+      this.currentBest = ( BinPackingSolution ) ( sol.getCopy() );
+      this.currentBestFitness = solFitness;
+
+      System.out.println( "Found new best (" + solFitness + ") for the " +
+        this.newBestInstanceNumber + " time."
+      );
     }
+
+    if ( this.numFitnessEvalsLeft % 1 == 0 ) {
+
+      this.stopTime = System.currentTimeMillis();
+      long elapsedTime = this.stopTime - this.startTime;
+
+      System.out.println(
+        "Run " + parameters.get( "currentRun" ) +
+          " eval " + this.numFitnessEvalsLeft +
+          " ( " + elapsedTime + " )"
+      );
+
+    }
+
+
   }
 
   @Override
   public int compare( Individual i1, Individual i2 ) {
-    BinPackingSolution sol1 = ( BinPackingSolution )( i1 );
-    BinPackingSolution sol2 = ( BinPackingSolution )( i2 );
+    BinPackingSolution sol1 = ( BinPackingSolution ) ( i1 );
+    BinPackingSolution sol2 = ( BinPackingSolution ) ( i2 );
 
     Double fitness1 = this.fitness( sol1 );
     Double fitness2 = this.fitness( sol2 );

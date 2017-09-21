@@ -8,6 +8,7 @@ import grbcp5.hw01.stochastic.StochasticDelegate;
 import grbcp5.hw01.stochastic.StochasticSearch;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
 import grbcp5.hw01.stochastic.random.RandomSearch;
+import grbcp5.hw01.stochastic.random.RandomSearchDelegate;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,6 +60,9 @@ public class Main {
     BinPackingProblemDefinition problemDefinition;
     StochasticSearch searcher;
     StochasticDelegate delegate;
+    long startTime;
+    long endTime;
+    long elapsedTime;
 
     try {
 
@@ -88,21 +92,36 @@ public class Main {
 
     if( parameters.get( "searchType" ).equals( "RandomSearch" )  ) {
 
-      delegate = new BinPackingRandomSearchDelegate(
-        parameters,
-        problemDefinition
-      );
-      searcher = new RandomSearch(
-        ( BinPackingRandomSearchDelegate ) ( delegate )
-      );
+      startTime = System.currentTimeMillis();
+
+      for ( int r = 0; r < ( ( Integer ) ( parameters.get( "runs" ) ) ); r++ ) {
+
+
+        parameters.put( "currentRun", new Integer( r ) );
+        delegate = new BinPackingRandomSearchDelegate(
+            parameters,
+            problemDefinition
+        );
+        searcher = new RandomSearch(
+            ( RandomSearchDelegate ) ( delegate )
+        );
+
+
+        searcher.search();
+
+      }
+
+      endTime = System.currentTimeMillis();
+
+      elapsedTime = endTime - startTime;
+      System.out.println( "Total time: " + elapsedTime );
+
 
     } else {
       System.out.println( "Cannot handle '" + parameters.get( "searchType" )
                             + "'." );
       return;
     }
-
-    searcher.search();
 
   } /* Main function */
 

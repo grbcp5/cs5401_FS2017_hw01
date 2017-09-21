@@ -146,7 +146,9 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     BinPackingSolution sol = ( BinPackingSolution )( i );
 
     System.out.println( "New Solution Recieved" );
-    System.out.println( sol.getResultingSheet() );
+    if( this.numFitnessEvalsLeft == 0 ) {
+      System.out.println( sol.getResultingSheet() );
+    }
   }
 
   @Override

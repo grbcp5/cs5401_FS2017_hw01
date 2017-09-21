@@ -17,7 +17,7 @@ public class ProblemDefinitonFileReader {
 
   }
 
-  public ProblemDefinition getProblemDefinition() {
+  public BinPackingProblemDefinition getProblemDefinition() {
 
     /* Local Variables */
     Scanner problemScanner;
@@ -54,7 +54,7 @@ public class ProblemDefinitonFileReader {
       sheetWidth += shapes[ s ].getLargestDimension();
     }
 
-    return new ProblemDefinition( numShapes, shapes, sheetHeight, sheetWidth );
+    return new BinPackingProblemDefinition( numShapes, shapes, sheetHeight, sheetWidth );
   }
 
 }

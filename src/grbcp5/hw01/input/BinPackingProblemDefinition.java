@@ -2,17 +2,17 @@ package grbcp5.hw01.input;
 
 import grbcp5.hw01.shape.Shape;
 
-public class ProblemDefinition {
+public class BinPackingProblemDefinition {
 
   private final int numShapes;
   private final Shape[] shapes;
   private final int sheetHeight;
   private final int sheetWidth;
 
-  public ProblemDefinition( int numShapes,
-                            Shape[] shapes,
-                            int sheetHeight,
-                            int sheetWidth
+  public BinPackingProblemDefinition( int numShapes,
+                                      Shape[] shapes,
+                                      int sheetHeight,
+                                      int sheetWidth
 
   ) {
 

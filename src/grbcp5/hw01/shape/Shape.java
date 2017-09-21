@@ -430,4 +430,18 @@ public class Shape {
     return true;
   }
 
+  public Shape getCopy() {
+
+    if( this.isInitFromStringDefiniton() ) {
+      return new Shape( this.getDefinition() );
+    }
+
+    return new Shape( this.matrix, this.startRow, this.startCol );
+
+  }
+
+  @Override
+  protected Shape clone() {
+    return this.getCopy();
+  }
 }

@@ -1,10 +1,8 @@
 package grbcp5.hw01.test;
 
-import grbcp5.hw01.input.ProblemDefinition;
+import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.input.ProblemDefinitonFileReader;
 import grbcp5.hw01.shape.Shape;
-
-import static org.junit.Assert.*;
 
 public class ProblemDefinitonFileReaderTest {
 
@@ -12,7 +10,7 @@ public class ProblemDefinitonFileReaderTest {
   public void getProblemDefinition() throws Exception {
 
     ProblemDefinitonFileReader fileReader;
-    ProblemDefinition definition;
+    BinPackingProblemDefinition definition;
     Shape[] shapes;
     String[] configFiles;
     int shapeNum;

@@ -39,6 +39,7 @@ public class Shape {
   private final boolean[][] matrix;
   private final int startRow;
   private final int startCol;
+  private final int trimmedWidth;
 
   public Shape( String definition ) {
 
@@ -55,6 +56,8 @@ public class Shape {
     this.matrix = initializerReturnValue.getMatrix();
     this.startRow = initializerReturnValue.getStartRow();
     this.startCol = initializerReturnValue.getStartCol();
+
+    this.trimmedWidth = calcTrimmedWith();
 
   }
 
@@ -79,6 +82,8 @@ public class Shape {
     this.startRow = startRow;
     this.startCol = startCol;
 
+    this.trimmedWidth = calcTrimmedWith();
+
   }
 
   public Shape( int numRows, int numCols ) {
@@ -90,6 +95,8 @@ public class Shape {
 
     this.startRow = -1;
     this.startCol = -1;
+
+    this.trimmedWidth = 0;
   }
 
   public Shape( Shape copy ) {
@@ -144,6 +151,10 @@ public class Shape {
   }
 
   public int getTrimmedWidth() {
+    return this.trimmedWidth;
+  }
+
+  private int calcTrimmedWith() {
     for ( int c = this.getNumCols() - 1; c >= 0; c-- ) {
       for ( int r = 0; r < this.getNumRows(); r++ ) {
         if ( this.matrix[ r ][ c ] ) {
@@ -153,6 +164,13 @@ public class Shape {
     }
 
     return 0;
+  }
+
+  public double getFreePercentage() {
+    int trimW = this.getTrimmedWidth();
+    int totlW = this.getNumCols();
+
+    return ( totlW - trimW ) / ( ( double ) totlW );
   }
 
   public Shape rotate( int rotaiton ) {

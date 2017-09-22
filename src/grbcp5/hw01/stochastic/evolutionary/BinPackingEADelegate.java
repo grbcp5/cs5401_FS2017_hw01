@@ -61,6 +61,21 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   }
 
   @Override
+  public String getParentSelectionMethod() {
+    return ( ( String ) ( this.parameters.get( "parentSelection") ) );
+  }
+
+  @Override
+  public int getParentSelectionTournamentSize() {
+    return ( ( int )( parameters.get( "parentSelectionTournamentSize" ) ) );
+  }
+
+  @Override
+  public int getNumParents() {
+    return ( ( int )( parameters.get( "numParents" ) ) );
+  }
+
+  @Override
   public Individual[] getInitialPopulation() {
 
     // Randomly generate initial population
@@ -71,7 +86,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public int getPopulationSize() {
-    return this.getPopulationSize();
+    return this.populationSize;
   }
 
   @Override
@@ -81,17 +96,23 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public Individual repair( Individual i, int lowLoci, int highLoci ) {
-    BinPackingSolution sol = ( BinPackingSolution )( i );
 
-    return sol;
+    /* Random repair */
+    return randomSearchDelegate.repair( i, lowLoci, highLoci );
+
   }
 
   @Override
   public double fitness( Individual i ) {
     BinPackingSolution sol = ( BinPackingSolution ) ( i );
     Shape resultingSheet = sol.getResultingSheet();
+    int trimW;
+    int totlW;
 
-    return resultingSheet.getTrimmedWidth() / resultingSheet.getNumCols();
+    trimW = resultingSheet.getTrimmedWidth();
+    totlW = resultingSheet.getNumCols();
+
+    return ( totlW - trimW ) / ( ( double )( totlW ) );
   }
 
   @Override

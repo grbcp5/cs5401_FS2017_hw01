@@ -44,6 +44,10 @@ public final class BinPackingSolution extends Individual {
     return this.resultingSheet;
   }
 
+  public double getFreePercentage() {
+    return this.getResultingSheet().getFreePercentage();
+  }
+
   public void setSheet( Shape sheet ) {
     this.resultingSheet = sheet;
   }

@@ -28,8 +28,9 @@ public class BinPackingEADelegateTest {
     BinPackingEADelegate delegateUnderTest;
     BinPackingProblemDefinition problemDefinition;
 
+    int populationSize = 100;
     eaParameters = new HashMap<>();
-    eaParameters.put( "populationSize", 100 );
+    eaParameters.put( "populationSize", populationSize );
 
     problemDefinition = new ProblemDefinitonFileReader(
       "config/50Shapes.txt"

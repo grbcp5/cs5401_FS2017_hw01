@@ -39,7 +39,7 @@ public class Shape {
   private final boolean[][] matrix;
   private final int startRow;
   private final int startCol;
-  private final int trimmedWidth;
+  private int trimmedWidth;
 
   public Shape( String definition ) {
 
@@ -57,8 +57,7 @@ public class Shape {
     this.startRow = initializerReturnValue.getStartRow();
     this.startCol = initializerReturnValue.getStartCol();
 
-    this.trimmedWidth = calcTrimmedWith();
-
+    this.trimmedWidth = -1;
   }
 
   public Shape( boolean[][] initMatrix, int startRow, int startCol ) {
@@ -82,7 +81,7 @@ public class Shape {
     this.startRow = startRow;
     this.startCol = startCol;
 
-    this.trimmedWidth = calcTrimmedWith();
+    this.trimmedWidth = -1;
 
   }
 
@@ -151,6 +150,10 @@ public class Shape {
   }
 
   public int getTrimmedWidth() {
+    if( this.trimmedWidth == -1 ) {
+      this.trimmedWidth = calcTrimmedWith();
+    }
+
     return this.trimmedWidth;
   }
 

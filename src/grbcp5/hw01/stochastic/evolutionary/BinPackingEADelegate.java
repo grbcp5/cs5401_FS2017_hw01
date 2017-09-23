@@ -1,5 +1,6 @@
 package grbcp5.hw01.stochastic.evolutionary;
 
+import grbcp5.hw01.GRandom;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.BinPackingSolution;
@@ -9,10 +10,11 @@ import grbcp5.hw01.stochastic.random.RandomSearch;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class BinPackingEADelegate extends EvolutionaryDelegate {
 
-  private Map< String , Object > parameters;
+  private Map< String, Object > parameters;
   BinPackingProblemDefinition problemDefinition;
   private int populationSize;
 
@@ -28,14 +30,14 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.problemDefinition = problemDefinition;
 
     this.populationSize =
-      ( ( Integer )( this.parameters.get( "populationSize" ) ) );
+      ( ( Integer ) ( this.parameters.get( "populationSize" ) ) );
 
     // Random Search
     Map< String, Object > randomSearchParameters = new HashMap<>();
     randomSearchParameters.put( "fitnessEvals", this.populationSize );
     this.randomSearchDelegate = new RandomSearchDelegateForEADelegate(
-        randomSearchParameters,
-        problemDefinition
+      randomSearchParameters,
+      problemDefinition
     );
     this.randomSearch = new RandomSearch( this.randomSearchDelegate );
 
@@ -43,36 +45,73 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public boolean shouldContinue() {
-    return false;
+    return true;
   }
 
   @Override
-  public void handleNewIndividual( Individual i ) {
+  public boolean handleNewIndividual( Individual i ) {
 
+    return this.shouldContinue();
   }
 
   @Override
   public Individual mutate( Individual i ) {
-    BinPackingSolution sol = ( BinPackingSolution )( i );
 
+    Individual result = i.getCopy();
+    Random rnd = GRandom.getInstance();
+    double mutationRate;
 
+    mutationRate = this.getMutationRate();
 
-    return sol;
+    // For each gene location
+    for ( int loci = 0; loci < randomSearchDelegate.getGenePoolSize();
+          loci++ ) {
+
+      // See if this gene should be mutated
+      if ( rnd.nextDouble() <= mutationRate ) {
+
+        // If so, mutate this gene
+        result.setGene( loci, randomSearchDelegate.getRandomGene( loci ) );
+      }
+
+    }
+
+    return result;
+  }
+
+  @Override
+  public String getSurviorSelectionMethod() {
+    return ( ( String ) ( this.parameters.get( "survivorSelectionMethod" ) ) );
+  }
+
+  @Override
+  public int getSurvivalTournamentSize() {
+    return (
+      ( int ) ( this.parameters.get( "survivorSelectionTournamentSize" ) )
+    );
   }
 
   @Override
   public String getParentSelectionMethod() {
-    return ( ( String ) ( this.parameters.get( "parentSelection") ) );
+    return ( ( String ) ( this.parameters.get( "parentSelectionMethod" ) ) );
+  }
+
+  @Override
+  public double getMutationRate() {
+    return ( ( double ) ( this.parameters.get( "mutationRate" ) ) );
   }
 
   @Override
   public int getParentSelectionTournamentSize() {
-    return ( ( int )( parameters.get( "parentSelectionTournamentSize" ) ) );
+    return ( ( int ) ( parameters.get( "parentSelectionTournamentSize" ) ) );
   }
 
-  @Override
-  public int getNumParents() {
-    return ( ( int )( parameters.get( "numParents" ) ) );
+  public String getMultiaryOperator() {
+    return ( ( String ) ( parameters.get( "multiaryOperator" ) ) );
+  }
+
+  public int getNumCrossoverPoints() {
+    return ( ( int ) ( parameters.get( "numCrossoverPoints" ) ) );
   }
 
   @Override
@@ -82,6 +121,10 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.randomSearch.search();
 
     return this.randomSearchDelegate.getPopulation();
+  }
+
+  public int getNumChildren() {
+    return ( ( int ) ( parameters.get( "numChildren" ) ) );
   }
 
   @Override
@@ -112,13 +155,13 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     trimW = resultingSheet.getTrimmedWidth();
     totlW = resultingSheet.getNumCols();
 
-    return ( totlW - trimW ) / ( ( double )( totlW ) );
+    return ( totlW - trimW ) / ( ( double ) ( totlW ) );
   }
 
   @Override
   public int compare( Individual i1, Individual i2 ) {
-    BinPackingSolution sol1 = ( BinPackingSolution )( i1 );
-    BinPackingSolution sol2 = ( BinPackingSolution )( i2 );
+    BinPackingSolution sol1 = ( BinPackingSolution ) ( i1 );
+    BinPackingSolution sol2 = ( BinPackingSolution ) ( i2 );
 
     Double fitness1 = this.fitness( sol1 );
     Double fitness2 = this.fitness( sol2 );
@@ -144,8 +187,10 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
   }
 
   @Override
-  public void handleNewIndividual( Individual i ) {
-    population[ currentIndex++ ] = ( ( BinPackingSolution )( i ) );
+  public boolean handleNewIndividual( Individual i ) {
+    population[ currentIndex++ ] = ( ( BinPackingSolution ) ( i ) );
+
+    return this.shouldContinue();
   }
 
   @Override

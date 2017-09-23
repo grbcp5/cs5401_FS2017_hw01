@@ -151,7 +151,7 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
     this.startTime = System.currentTimeMillis();
 
-    return ( numFitnessEvalsLeft-- > 0 );
+    return ( numFitnessEvalsLeft > 0 );
   }
 
   public int getNumFitnessEvalsLeft() {
@@ -159,7 +159,7 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
   }
 
   @Override
-  public void handleNewIndividual( Individual i ) {
+  public boolean handleNewIndividual( Individual i ) {
     BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
     /* Local Variables */
@@ -191,7 +191,8 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
     }
 
-
+    this.numFitnessEvalsLeft--;
+    return shouldContinue();
   }
 
   @Override

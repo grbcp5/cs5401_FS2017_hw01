@@ -15,7 +15,19 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract String getParentSelectionMethod();
 
-  public abstract int getParentSelectionTournamentSize();
+  public abstract String getSurviorSelectionMethod();
 
-  public abstract int getNumParents();
+  public abstract int getSurvivalTournamentSize();
+
+  public abstract void signalEndOfGeneration();
+
+  public abstract double getMutationRate();
+
+  public abstract String getMultiaryOperator();
+
+  public abstract int getNumCrossoverPoints();
+
+  public abstract int getNumChildren();
+
+  public abstract int getParentSelectionTournamentSize();
 }

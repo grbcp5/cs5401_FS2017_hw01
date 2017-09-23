@@ -8,7 +8,7 @@ public abstract class StochasticDelegate implements Comparator< Individual> {
 
   public abstract boolean shouldContinue();
 
-  public abstract void handleNewIndividual( Individual i );
+  public abstract boolean handleNewIndividual( Individual i );
 
   public abstract Individual repair( Individual i, int lowLoci, int highLoci );
 

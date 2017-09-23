@@ -3,10 +3,8 @@ package grbcp5.hw01.stochastic.evolutionary;
 import grbcp5.hw01.GRandom;
 import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticSearch;
-import grbcp5.hw01.stochastic.random.RandomSearch;
-import grbcp5.hw01.stochastic.random.RandomSearchDelegate;
 
-import java.util.Map;
+import java.util.Arrays;
 import java.util.Random;
 
 public class EvolutionarySearch extends StochasticSearch {
@@ -24,32 +22,46 @@ public class EvolutionarySearch extends StochasticSearch {
 
     /* Local variables */
     Individual[] population;
-    Individual[] parents;
+    Individual[] incompleteGeneration;
     Individual[] children;
 
     // create initial population
     population = delegate.getInitialPopulation();
-    sendToDelegate( population );
 
     // Evolve initial population
     while ( delegate.shouldContinue() ) {
 
-      /* Select parents */
-      parents = selectParents( population );
-      sendToDelegate( parents );
-
       /* Create children */
-      children = createChildren( parents );
+      try {
+
+        children = createChildren( population, delegate.getNumChildren() );
+
+      } catch ( DelegateTriggeredStopRequest e ) {
+
+        incompleteGeneration = e.getIndividuals();
+
+        int length = 0;
+        while ( incompleteGeneration[ length ] != null ) {
+          length++;
+        }
+
+        children = new Individual[ length ];
+        System.arraycopy( incompleteGeneration, 0, children, 0, length );
+      }
 
       /* Find survivors */
       population = getSurvivors( population, children );
 
+      delegate.signalEndOfGeneration();
     }
 
     return delegate.getBestIndividual();
   }
 
-  private Individual[] selectParents( Individual[] population ) {
+  private Individual[] selectParents(
+    Individual[] population,
+    int numParents
+  ) {
 
     int k;
     String method = delegate.getParentSelectionMethod();
@@ -57,15 +69,19 @@ public class EvolutionarySearch extends StochasticSearch {
     switch ( method ) {
       case "kTournament":
         k = delegate.getParentSelectionTournamentSize();
-        return this.kTournSelWithReplacement( k, population );
+        return this.kTournSelection( k, population, numParents );
 
       case "fitnessProportional":
       default: // Default to fitnessProportional
-        return this.fitnessProportionalParentSelection( population );
+        return this
+          .fitnessProportionalParentSelection( population, numParents );
     }
   }
 
-  private Individual[] fitnessProportionalParentSelection( Individual[] pop ) {
+  private Individual[] fitnessProportionalParentSelection(
+    Individual[] pop,
+    int numParents
+  ) {
 
     /* Local variables */
     Individual[] parents;
@@ -80,7 +96,7 @@ public class EvolutionarySearch extends StochasticSearch {
     
     /* Initialize */
     numParentsSelected = 0;
-    totalNumParents = delegate.getNumParents();
+    totalNumParents = numParents;
     currentIndex = 0;
     rnd = GRandom.getInstance();
     parents = new Individual[ totalNumParents ];
@@ -89,7 +105,7 @@ public class EvolutionarySearch extends StochasticSearch {
 
     /* Get each members probability value */
     totalFitness = 0;
-    for( int i = 0; i < populationSize; i++ ) {
+    for ( int i = 0; i < populationSize; i++ ) {
       fitness[ i ] = delegate.fitness( pop[ i ] );
       totalFitness += fitness[ i ];
     }
@@ -98,40 +114,172 @@ public class EvolutionarySearch extends StochasticSearch {
       proportion[ i ] = fitness[ i ] / totalFitness;
     }
 
-    while( numParentsSelected < totalNumParents ) {
+    while ( numParentsSelected < totalNumParents ) {
 
-      if( rnd.nextDouble() <= proportion[ currentIndex ] ) {
+      if ( rnd.nextDouble() <= proportion[ currentIndex ] ) {
         System.out.println( "New Parent selected" );
         parents[ numParentsSelected++ ] = pop[ currentIndex ];
       }
 
       currentIndex = ( currentIndex + 1 ) % populationSize;
     }
-    
+
     return parents;
   }
 
-  private Individual[] kTournSelWithReplacement( int k, Individual[] pop ) {
+  private Individual[] kTournSelection(
+    int k,
+    Individual[] pop,
+    int numSelected
+  ) {
 
-    return null;
+    if ( numSelected != pop.length / k ) {
+      return null;
+    }
+
+    /* Local Variables */
+    Individual[] parents;
+    Individual[][] groups;
+    int[] parentsPutInGroup;
+    Random rnd;
+    int groupToPutParentIn;
+    int maxGroupSize;
+
+    /* Initialize */
+    parents = new Individual[ numSelected ];
+    groups = new Individual[ numSelected ][ k ];
+    parentsPutInGroup = new int[ numSelected ];
+    rnd = GRandom.getInstance();
+    maxGroupSize = k;
+
+    // Split parents up groups
+    for ( Individual parent : pop ) {
+      // Pick a random group to put potential parent in
+      groupToPutParentIn = rnd.nextInt( numSelected );
+
+      // If that group is already full...
+      while ( parentsPutInGroup[ groupToPutParentIn ] == maxGroupSize ) {
+        // see if next group is full
+        groupToPutParentIn =
+          ( groupToPutParentIn + 1 ) % numSelected;
+      }
+
+      // Put parent in group
+      groups[ groupToPutParentIn ][ parentsPutInGroup[ groupToPutParentIn ]++ ]
+        = parent;
+
+    }
+
+    // Pick best parent from each group
+    for ( int p = 0; p < numSelected; p++ ) {
+      for ( int g = 0; g < k; g++ ) {
+        Arrays.sort( groups[ g ], delegate );
+        parents[ p ] = groups[ p ][ k - 1 ];
+      }
+    }
+
+    return parents;
   }
 
-  private Individual[] createChildren( Individual[] parents ) {
+  private Individual[] createChildren( Individual[] pop,
+                                       int numChildren ) throws
+    DelegateTriggeredStopRequest {
 
-    return null;
+    /* Local variables */
+    Individual[] children;
+
+    /* Initialize */
+    children = new Individual[ numChildren ];
+
+    /* Create each child */
+    for ( int c = 0; c < numChildren; c++ ) {
+      children[ c ] = this.createChild( pop );
+      children[ c ] = delegate.mutate( children[ c ] );
+
+      // If delegate indicates to stop
+      if( !delegate.handleNewIndividual( children[ c ] ) ) {
+        throw new DelegateTriggeredStopRequest( children );
+      }
+
+    }
+
+    return children;
   }
 
   private Individual createChild( Individual[] parents ) {
 
-    return null;
+    /* Local variables */
+    Individual child;
+    int n;
+
+    /* Initialize */
+    n = delegate.getNumCrossoverPoints();
+
+    switch ( delegate.getMultiaryOperator() ) {
+      case "nPointCrossover":
+      default: // default to n point crossover
+        child = MultiaryOperator.nPointCrossOver( n, parents, delegate );
+    }
+
+    return child;
   }
 
-  private Individual[] getSurvivors( Individual[] population, Individual[] children ) {
+  private Individual[] getSurvivors( Individual[] population,
+                                     Individual[] children ) {
 
-    return null;
+    Individual[] surplus;
+    Individual[] survivors;
+    int k;
+
+    surplus = new Individual[ population.length + children.length ];
+
+    System.arraycopy(
+      population,
+      0,
+      surplus,
+      0,
+      population.length
+    );
+
+    System.arraycopy(
+      children,
+      0,
+      surplus,
+      population.length,
+      children.length
+    );
+
+    switch ( delegate.getSurviorSelectionMethod() ) {
+      case "kTournament":
+        k = delegate.getSurvivalTournamentSize();
+        survivors = kTournSelection( k, surplus, population.length );
+        break;
+      case "truncation":
+      default: // default to truncation
+        survivors = survivalTruncation( surplus, population.length );
+    }
+
+    return survivors;
   }
-  
-  
+
+  private Individual[] survivalTruncation(
+    Individual[] surplus,
+    int populationSize
+  ) {
+
+    Individual[] survivors;
+
+    survivors = new Individual[ populationSize ];
+
+    Arrays.sort( surplus, delegate );
+
+    for ( int i = 0; i < populationSize; i++ ) {
+      survivors[ i ] = surplus[ ( surplus.length - 1 ) - i ];
+    }
+
+    return survivors;
+  }
+
   private void sendToDelegate( Individual[] individuals ) {
     for ( Individual i : individuals ) {
       delegate.handleNewIndividual( i );

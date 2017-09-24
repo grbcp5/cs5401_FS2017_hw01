@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<config>
-  <testInteger>12345</testInteger>
-  <testDouble>98.65</testDouble>
-  <testString>Hahaha</testString>
-</config>

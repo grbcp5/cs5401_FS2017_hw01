@@ -4,9 +4,7 @@ import grbcp5.hw01.GRandom;
 import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticSearch;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 public class EvolutionarySearch extends StochasticSearch {
 
@@ -42,7 +40,8 @@ public class EvolutionarySearch extends StochasticSearch {
         incompleteGeneration = e.getIndividuals();
 
         int length = 0;
-        while ( incompleteGeneration[ length ] != null ) {
+        while ( length < incompleteGeneration.length &&
+          incompleteGeneration[ length ] != null ) {
           length++;
         }
 
@@ -70,7 +69,7 @@ public class EvolutionarySearch extends StochasticSearch {
     switch ( method ) {
       case "kTournament":
         k = delegate.getParentSelectionTournamentSize();
-        return this.kTournSelection( k, population, numParents );
+        return this.kTournSelection( k, population, numParents, true );
 
       case "fitnessProportional":
       default: // Default to fitnessProportional
@@ -130,61 +129,55 @@ public class EvolutionarySearch extends StochasticSearch {
 
   private Individual[] kTournSelection(
     int k,
-    Individual[] pop,
-    int returnSize
+    Individual[] population,
+    int numToSelect,
+    boolean replace
   ) {
 
-    /* Local Variables */
-    Individual[] parents;
-    LinkedList<Individual> potentialParents;
-    Individual[][] groups;
-    int[] parentsPutInGroup;
+    /* Local variables */
+    List< Individual > pop;
+    Individual[] result;
     Random rnd;
-    int groupToPutParentIn;
-    int maxGroupSize;
-    int numSelected;
     int rndIdx;
+    int maxIdx;
 
     /* Initialize */
-    numSelected = pop.length / k;
-    parents = new Individual[ returnSize ];
-    potentialParents = new LinkedList<>();
-    groups = new Individual[ numSelected ][ k ];
-    parentsPutInGroup = new int[ numSelected ];
+    result = new Individual[ numToSelect ];
+    Arrays.sort( population, delegate );
     rnd = GRandom.getInstance();
-    maxGroupSize = k;
 
-    // Split parents up groups
-    for ( Individual parent : pop ) {
-      // Pick a random group to put potential parent in
-      groupToPutParentIn = rnd.nextInt( numSelected );
+    if( replace ) {
+      pop = new ArrayList< Individual >( Arrays.asList( population ) );
+    } else {
+      pop = new LinkedList< Individual >( Arrays.asList( population ) );
+    }
 
-      // If that group is already full...
-      while ( parentsPutInGroup[ groupToPutParentIn ] == maxGroupSize ) {
-        // see if next group is full
-        groupToPutParentIn =
-          ( groupToPutParentIn + 1 ) % numSelected;
+    /* For each number to select */
+    for ( int i = 0; i < numToSelect; i++ ) {
+
+      /* Try k different potential individuals */
+      maxIdx = -1;
+      for ( int j = 0; j < k; j++ ) {
+
+        /* Try at random */
+        rndIdx = rnd.nextInt( pop.size() - 1 );
+
+        /* Select the best one */
+        if( rndIdx > maxIdx ) {
+          maxIdx = rndIdx;
+        }
       }
 
-      // Put parent in group
-      groups[ groupToPutParentIn ][ parentsPutInGroup[ groupToPutParentIn ]++ ]
-        = parent;
+      /* Put selected individual in the result */
+      if( replace ) {
+        result[ i ] = pop.get( maxIdx );
+      } else {
+        result[ i ] = pop.remove( maxIdx );
+      }
 
     }
 
-    // Pick best potential parent from each group
-    for ( int p = 0; p < numSelected; p++ ) {
-        Arrays.sort( groups[ p ], delegate );
-        potentialParents.addLast( groups[ p ][ k - 1 ] );
-    }
-
-    // Return only the desired number of parents
-    for ( int i = 0; i < returnSize; i++ ) {
-      rndIdx = rnd.nextInt( potentialParents.size() );
-      parents[ i ] = potentialParents.remove( rndIdx );
-    }
-
-    return parents;
+    return result;
   }
 
   private Individual[] createChildren( Individual[] pop,
@@ -200,10 +193,11 @@ public class EvolutionarySearch extends StochasticSearch {
     /* Create each child */
     for ( int c = 0; c < numChildren; c++ ) {
       children[ c ] = this.createChild( pop );
+      assert children[ c ] != null;
       children[ c ] = delegate.mutate( children[ c ] );
 
       // If delegate indicates to stop
-      if( !delegate.handleNewIndividual( children[ c ] ) ) {
+      if ( !delegate.handleNewIndividual( children[ c ] ) ) {
         throw new DelegateTriggeredStopRequest( children );
       }
 
@@ -225,6 +219,7 @@ public class EvolutionarySearch extends StochasticSearch {
       case "nPointCrossover":
       default: // default to n point crossover
         child = MultiaryOperator.nPointCrossOver( n, parents, delegate );
+        assert child != null;
     }
 
     return child;
@@ -258,7 +253,7 @@ public class EvolutionarySearch extends StochasticSearch {
     switch ( delegate.getSurviorSelectionMethod() ) {
       case "kTournament":
         k = delegate.getSurvivalTournamentSize();
-        survivors = kTournSelection( k, surplus, population.length );
+        survivors = kTournSelection( k, surplus, population.length, false );
         break;
       case "truncation":
       default: // default to truncation

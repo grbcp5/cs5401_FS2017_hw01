@@ -1,6 +1,7 @@
 package grbcp5.hw01.stochastic.evolutionary;
 
 import grbcp5.hw01.GRandom;
+import grbcp5.hw01.Main;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.BinPackingSolution;
@@ -14,6 +15,7 @@ import java.util.Random;
 
 public class BinPackingEADelegate extends EvolutionaryDelegate {
 
+
   private Map< String, Object > parameters;
   BinPackingProblemDefinition problemDefinition;
   private int populationSize;
@@ -21,6 +23,13 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   private RandomSearch randomSearch;
   private RandomSearchDelegateForEADelegate randomSearchDelegate;
 
+  private int numGenerations;
+  private int numNewIndividuals;
+
+  private BinPackingSolution currentBest;
+  private double currentBestFitness;
+
+  /* Constructor */
   public BinPackingEADelegate(
     Map< String, Object > parameters,
     BinPackingProblemDefinition problemDefinition
@@ -41,15 +50,54 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     );
     this.randomSearch = new RandomSearch( this.randomSearchDelegate );
 
+    // Instance variables */
+    this.numGenerations = 0;
+    this.numNewIndividuals = 0;
+
+    currentBestFitness = -1;
+  }
+
+
+  @Override
+  public void signalEndOfGeneration() {
+    int run;
+
+    run = ( int ) ( parameters.get( "currentRun" ) );
+
+    Main.printDashedln();
+    System.out.println( "Run " + run + ": End of generation: " + this
+      .numGenerations );
+    Main.printDashedln();
+
+    this.numGenerations++;
   }
 
   @Override
   public boolean shouldContinue() {
-    return true;
+    return this.numNewIndividuals <
+      ( ( int )( parameters.get( "fitnessEvals" ) ) );
   }
 
   @Override
   public boolean handleNewIndividual( Individual i ) {
+    BinPackingSolution sol = ( BinPackingSolution )( i );
+
+    int run;
+
+    run = ( int ) ( parameters.get( "currentRun" ) );
+    this.numNewIndividuals++;
+
+    if( this.numNewIndividuals % 100 == 0 ) {
+      System.out.println( "Run " + run + ": Used " + this.numNewIndividuals +
+                            " evaluations." );
+    }
+
+    if( sol.getFreePercentage() > this.currentBestFitness ) {
+      this.currentBest = sol;
+      this.currentBestFitness = sol.getFreePercentage();
+
+      System.out.println( "New best of " + this.currentBestFitness );
+    }
 
     return this.shouldContinue();
   }
@@ -134,7 +182,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public Individual getBestIndividual() {
-    return null;
+    return currentBest;
   }
 
   @Override
@@ -181,16 +229,22 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
   ) {
     super( parameters, problemDefinition );
 
-    this.population = new BinPackingSolution[ getNumFitnessEvalsLeft() ];
+    this.population = new BinPackingSolution[ this.getNumFitnessEvalsLeft() ];
     this.currentIndex = 0;
 
   }
 
   @Override
   public boolean handleNewIndividual( Individual i ) {
-    population[ currentIndex++ ] = ( ( BinPackingSolution ) ( i ) );
+    population[ currentIndex ] = ( ( BinPackingSolution ) ( i ) );
+    currentIndex++;
 
     return this.shouldContinue();
+  }
+
+  @Override
+  public boolean shouldContinue() {
+    return this.currentIndex < this.population.length;
   }
 
   @Override

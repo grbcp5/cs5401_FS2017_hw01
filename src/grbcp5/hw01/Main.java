@@ -8,6 +8,9 @@ import grbcp5.hw01.stochastic.BinPackingSolution;
 import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticDelegate;
 import grbcp5.hw01.stochastic.StochasticSearch;
+import grbcp5.hw01.stochastic.evolutionary.BinPackingEADelegate;
+import grbcp5.hw01.stochastic.evolutionary.EvolutionaryDelegate;
+import grbcp5.hw01.stochastic.evolutionary.EvolutionarySearch;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
 import grbcp5.hw01.stochastic.random.RandomSearch;
 import grbcp5.hw01.stochastic.random.RandomSearchDelegate;
@@ -20,14 +23,14 @@ import java.util.Random;
 
 public class Main {
 
-  private static void printDashedln( int length ) {
+  public static void printDashedln( int length ) {
     for( int i = 0; i < length; i++ ) {
       System.out.print( '-' );
     }
     System.out.println();
   }
 
-  private static void printDashedln() {
+  public static void printDashedln() {
     printDashedln( 80 );
   }
 
@@ -96,50 +99,66 @@ public class Main {
     problemDefinitonFileReader = new ProblemDefinitonFileReader( args[ 1 ] );
     problemDefinition = problemDefinitonFileReader.getProblemDefinition();
 
-    if( parameters.get( "searchType" ).equals( "RandomSearch" )  ) {
+    int numRuns = ( ( Integer ) ( parameters.get( "runs" ) ) );
+    int numFitnessEvals = ( int ) parameters.get( "fitnessEvals" );
+    parameters.put( "fitnessEvals", ( numFitnessEvals / numRuns ) );
 
+    /* Run problem */
+    startTime = 0;
+    for ( int r = 0; r < numRuns; r++ ) {
+
+      parameters.put( "currentRun",  r );
       startTime = System.currentTimeMillis();
 
-      for ( int r = 0; r < ( ( Integer ) ( parameters.get( "runs" ) ) ); r++ ) {
+      if ( parameters.get( "searchType" ).equals( "RandomSearch" ) ) {
 
-
-        parameters.put( "currentRun", new Integer( r ) );
         delegate = new BinPackingRandomSearchDelegate(
-            parameters,
-            problemDefinition
+          parameters,
+          problemDefinition
         );
         searcher = new RandomSearch(
-            ( RandomSearchDelegate ) ( delegate )
+          ( RandomSearchDelegate ) ( delegate )
         );
 
 
-        runBest = searcher.search();
-        runBestFitness = delegate.fitness( runBest );
 
-        if( runBestFitness > currentBestFitness ) {
-          currentBestFitness = runBestFitness;
-          currentBest = runBest;
+      } else if ( parameters.get( "searchType" ).equals( "EvolutionarySearch" )
+        ) {
 
-          System.out.println( "Run produced a better individual." );
-        }
+        delegate = new BinPackingEADelegate(
+          parameters,
+          problemDefinition
+        );
+        searcher = new EvolutionarySearch(
+          ( ( EvolutionaryDelegate ) ( delegate ) )
+        );
 
+
+      } else {
+        System.out.println( "Cannot handle '" + parameters.get( "searchType" )
+                              + "'." );
+        return;
       }
 
-      endTime = System.currentTimeMillis();
+      runBest = searcher.search();
+      runBestFitness = delegate.fitness( runBest );
 
-      elapsedTime = endTime - startTime;
-      System.out.println( "Total time: " + elapsedTime );
-      System.out.println( "Best individual (" + currentBestFitness + "): " );
-      System.out.println(
-        ( ( BinPackingSolution )( currentBest ) ).getResultingSheet()
-      );
+      if ( runBestFitness > currentBestFitness ) {
+        currentBestFitness = runBestFitness;
+        currentBest = runBest;
 
+        System.out.println( "Run produced a better individual." );
+      }
 
-    } else {
-      System.out.println( "Cannot handle '" + parameters.get( "searchType" )
-                            + "'." );
-      return;
     }
+
+    endTime = System.currentTimeMillis();
+    elapsedTime = endTime - startTime;
+    System.out.println( "Total time: " + elapsedTime );
+    System.out.println( "Best individual (" + currentBestFitness + "): " );
+    System.out.println(
+      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
+    );
 
   } /* Main function */
 

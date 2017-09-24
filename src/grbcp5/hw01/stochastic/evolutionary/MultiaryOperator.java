@@ -37,6 +37,7 @@ public class MultiaryOperator {
 
     /* Return null if not enough individuals to cross over */
     if ( individuals.length != ( n + 1 ) ) {
+      assert false;
       return null;
     }
 
@@ -44,6 +45,7 @@ public class MultiaryOperator {
     for ( int i = 0; i < ( individuals.length - 1 ); i++ ) {
       if ( individuals[ i ].getGenes().length
         != individuals[ i + 1 ].getGenes().length ) {
+        assert false;
         return null;
       }
     }
@@ -103,7 +105,7 @@ public class MultiaryOperator {
       }
     }
 
-    return null;
+    return resultingIndividual;
   }
 
 }

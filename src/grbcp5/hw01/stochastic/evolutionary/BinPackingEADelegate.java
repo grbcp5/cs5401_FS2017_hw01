@@ -4,7 +4,9 @@ import grbcp5.hw01.GRandom;
 import grbcp5.hw01.Main;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.shape.Shape;
+import grbcp5.hw01.stochastic.BinPackingGene;
 import grbcp5.hw01.stochastic.BinPackingSolution;
+import grbcp5.hw01.stochastic.Gene;
 import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
 import grbcp5.hw01.stochastic.random.RandomSearch;
@@ -64,10 +66,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     run = ( int ) ( parameters.get( "currentRun" ) );
 
-    Main.printDashedln();
     System.out.println( "Run " + run + ": End of generation: " + this
       .numGenerations );
-    Main.printDashedln();
 
     this.numGenerations++;
   }
@@ -171,8 +171,35 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     return this.randomSearchDelegate.getPopulation();
   }
 
+  @Override
+  public Individual getEmptyIndividual() {
+    BinPackingSolution result = new BinPackingSolution(
+      new BinPackingGene[ this.problemDefinition.getNumShapes() ],
+      this.problemDefinition.getShapes(),
+      this.problemDefinition.getSheetHeight(),
+      this.problemDefinition.getSheetWidth(),
+      new Shape( this.problemDefinition.getSheetHeight(), this
+        .problemDefinition.getSheetWidth() )
+    );
+
+    return result;
+  }
+
   public int getNumChildren() {
     return ( ( int ) ( parameters.get( "numChildren" ) ) );
+  }
+
+  @Override
+  public Gene getBestGene( Gene g1, Gene g2 ) {
+    BinPackingGene bpg1 = ( BinPackingGene ) g1;
+    BinPackingGene bpg2 = ( BinPackingGene ) g2;
+
+    if( bpg1 == null || bpg1.getX() < bpg2.getX() ) {
+      return bpg2;
+    } else {
+      return bpg1;
+    }
+
   }
 
   @Override

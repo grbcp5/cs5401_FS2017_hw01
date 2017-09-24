@@ -46,6 +46,8 @@ public class BinPackingSolutionChecker {
            shapeColIdx
          );
          newSol.setSheet( intermediateSheet );
+
+
       } catch ( FallOffExcpetion | OverlapException FOE ) {
         return null;
       }

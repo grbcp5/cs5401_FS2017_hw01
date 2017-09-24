@@ -4,6 +4,7 @@ package grbcp5.hw01;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.input.ConfigFileReader;
 import grbcp5.hw01.input.ProblemDefinitonFileReader;
+import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.BinPackingSolution;
 import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticDelegate;
@@ -103,6 +104,14 @@ public class Main {
     int numFitnessEvals = ( int ) parameters.get( "fitnessEvals" );
     parameters.put( "fitnessEvals", ( numFitnessEvals / numRuns ) );
 
+    if( ( parameters.get( "showShapes" ) == null ) || ( boolean ) parameters
+      .get( "showShapes" ) ) {
+      for ( Shape s :
+        problemDefinition.getShapes() ) {
+        System.out.println( s );
+      }
+    }
+
     /* Run problem */
     startTime = 0;
     for ( int r = 0; r < numRuns; r++ ) {
@@ -147,8 +156,12 @@ public class Main {
         currentBestFitness = runBestFitness;
         currentBest = runBest;
 
-        System.out.println( "Run produced a better individual." );
+        System.out.println( "Run produced a better individual. + (" +
+        currentBestFitness + ").");
+        System.out.println( ( (BinPackingSolution)currentBest)
+                              .getResultingSheet() );
       }
+      printDashedln();
 
     }
 

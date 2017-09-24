@@ -27,6 +27,11 @@ public class EvolutionarySearch extends StochasticSearch {
     // create initial population
     population = delegate.getInitialPopulation();
 
+//    for ( Individual i :
+//      population ) {
+//      System.out.println( "Individual fitness: " + delegate.fitness( i ) );
+//    }
+
     // Evolve initial population
     while ( delegate.shouldContinue() ) {
 
@@ -117,7 +122,6 @@ public class EvolutionarySearch extends StochasticSearch {
     while ( numParentsSelected < totalNumParents ) {
 
       if ( rnd.nextDouble() <= proportion[ currentIndex ] ) {
-        System.out.println( "New Parent selected" );
         parents[ numParentsSelected++ ] = pop[ currentIndex ];
       }
 
@@ -192,7 +196,9 @@ public class EvolutionarySearch extends StochasticSearch {
 
     /* Create each child */
     for ( int c = 0; c < numChildren; c++ ) {
-      children[ c ] = this.createChild( pop );
+      children[ c ] = this.createChild(
+        selectParents( pop, 2 )
+      );
       assert children[ c ] != null;
       children[ c ] = delegate.mutate( children[ c ] );
 
@@ -212,6 +218,11 @@ public class EvolutionarySearch extends StochasticSearch {
     Individual child;
     int n;
 
+//    for ( Individual parent :
+//      parents ) {
+//      System.out.println( "Parent fitness: " + delegate.fitness( parent ) );
+//    }
+
     /* Initialize */
     n = delegate.getNumCrossoverPoints();
 
@@ -221,6 +232,12 @@ public class EvolutionarySearch extends StochasticSearch {
         child = MultiaryOperator.nPointCrossOver( n, parents, delegate );
         assert child != null;
     }
+
+//    for ( Individual parent :
+//      parents ) {
+//      System.out.println( "Parent fitness: " + delegate.fitness( parent ) );
+//    }
+//    System.out.println( "Child fitness: " + delegate.fitness( child ) + "\n" );
 
     return child;
   }

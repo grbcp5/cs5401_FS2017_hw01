@@ -9,7 +9,8 @@ public abstract class Individual {
     this.genes = new Gene[ copyGenes.length ];
 
     for( int i = 0; i < copyGenes.length; i++ ) {
-      this.genes[ i ] = copyGenes[ i ].getCopy();
+      this.genes[ i ] = ( copyGenes[ i ] == null ) ?
+        null : copyGenes[ i ].getCopy();
     }
 
   }

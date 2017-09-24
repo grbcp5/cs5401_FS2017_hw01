@@ -1,5 +1,6 @@
 package grbcp5.hw01.stochastic.evolutionary;
 
+import grbcp5.hw01.stochastic.Gene;
 import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticDelegate;
 
@@ -10,6 +11,8 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
   public abstract Individual mutate( Individual i );
 
   public abstract Individual[] getInitialPopulation();
+
+  public abstract Individual getEmptyIndividual();
 
   public abstract int getPopulationSize();
 
@@ -28,6 +31,8 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
   public abstract int getNumCrossoverPoints();
 
   public abstract int getNumChildren();
+
+  public abstract Gene getBestGene( Gene g1, Gene g2 );
 
   public abstract int getParentSelectionTournamentSize();
 }

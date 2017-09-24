@@ -3,22 +3,23 @@
   <searchType dataType="String" >EvolutionarySearch</searchType>
   <seedSpecified dataType="Boolean" >true</seedSpecified>
   <seed dataType="Long" >10021996</seed>
-  <fitnessEvals dataType="Integer" >10000</fitnessEvals>
-  <runs dataType="Integer" >10</runs>
+  <fitnessEvals dataType="Integer" >100</fitnessEvals>
+  <runs dataType="Integer" >1</runs>
   <logFilePath dataType="String" >./log/quickRunLog</logFilePath>
   <solFilePath dataType="String" >./sol/quickRunSol</solFilePath>
+  <showShapes dataType="Boolean">true</showShapes>
 
   <!-- Evolutionary Parameters-->
-  <populationSize dataType="Integer">100</populationSize>
-  <numChildren dataType="Integer">50</numChildren>
-  <mutationRate dataType="Double">0.1</mutationRate>
+  <populationSize dataType="Integer">50</populationSize>
+  <numChildren dataType="Integer">25</numChildren>
+  <mutationRate dataType="Double">0.2</mutationRate>
 
   <parentSelectionMethod dataType="String">kTournament</parentSelectionMethod>
-  <parentSelectionTournamentSize dataType="Integer">5</parentSelectionTournamentSize>
+  <parentSelectionTournamentSize dataType="Integer">25</parentSelectionTournamentSize>
 
   <survivorSelectionMethod dataType="String">truncation</survivorSelectionMethod>
-  <survivorSelectionTournamentSize dataType="Integer">2</survivorSelectionTournamentSize>
+  <!-- <survivorSelectionTournamentSize dataType="Integer">2</survivorSelectionTournamentSize> -->
   <multiaryOperator dataType="String">nPointCrossover</multiaryOperator>
-  <numCrossoverPoints dataType="Integer">1</numCrossoverPoints>
+  <numCrossoverPoints dataType="Integer">5</numCrossoverPoints>
 
 </config>

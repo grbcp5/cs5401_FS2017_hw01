@@ -1,6 +1,7 @@
 package grbcp5.hw01.stochastic.evolutionary;
 
 import grbcp5.hw01.GRandom;
+import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.Gene;
 import grbcp5.hw01.stochastic.Individual;
 
@@ -29,14 +30,14 @@ public class MultiaryOperator {
     return executeCrossover( n, result, delegate );
   }
 
-  private static Individual executeCrossover(
+  public static Individual executeCrossover(
     int n,
     Individual[] individuals,
     EvolutionaryDelegate delegate
   ) {
 
     /* Return null if not enough individuals to cross over */
-    if ( individuals.length != ( n + 1 ) ) {
+    if ( n == 0 || individuals.length != ( n + 1 ) ) {
       assert false;
       return null;
     }
@@ -90,8 +91,8 @@ public class MultiaryOperator {
     Arrays.sort( crossOverPoints );
 
     /* Initialize loop variables */
-    curIdx = crossOverPoints[ 0 ];
-    resultingIndividual = individuals[ 0 ].getCopy();
+    curIdx = 0;
+    resultingIndividual = delegate.getEmptyIndividual();
 
     for ( int cop = 0; cop < crossOverPoints.length; cop++ ) {
       for ( curIdx = curIdx; curIdx <= crossOverPoints[ cop ]; curIdx++ ) {
@@ -100,9 +101,59 @@ public class MultiaryOperator {
         tryGene = currrentIndividual.getGenes()[ curIdx ].getCopy();
         resultingIndividual.setGene( curIdx, tryGene );
 
-        delegate.repair( resultingIndividual, curIdx, curIdx );
+        resultingIndividual = delegate.repair( resultingIndividual, curIdx,
+                                              curIdx );
 
       }
+    }
+
+    return resultingIndividual;
+  }
+
+  private static Individual executeLookInCrossover(
+    Individual[] individuals,
+    EvolutionaryDelegate delegate
+  ) {
+
+    /* Return null if individuals don't all have the same length */
+    for ( int i = 0; i < ( individuals.length - 1 ); i++ ) {
+      if ( individuals[ i ].getGenes().length
+        != individuals[ i + 1 ].getGenes().length ) {
+        assert false;
+        return null;
+      }
+    }
+
+    /* Local variables */
+    int[] crossOverPoints;
+    int newCrossoverPoint;
+    boolean newCrossoverPointIsValid;
+    int numGenes;
+    Random rnd;
+    int curIdx;
+    Gene bestGene;
+    Gene tryGene;
+
+    /* Initialize */
+    rnd = GRandom.getInstance();
+    numGenes = individuals[ 0 ].getGenes().length;
+    Individual currrentIndividual;
+    Individual resultingIndividual;
+
+    /* Initialize loop variables */
+    resultingIndividual = individuals[ 0 ].getCopy();
+
+    for( int i = 0; i < numGenes; i++ ) {
+
+      bestGene = null;
+      for ( int j = 0; j < individuals.length; j++ ) {
+        tryGene = individuals[ j ].getGene( i );
+        bestGene = delegate.getBestGene( bestGene, tryGene );
+      }
+
+      resultingIndividual.setGene( i, bestGene );
+      delegate.repair( resultingIndividual, i, i );
+
     }
 
     return resultingIndividual;

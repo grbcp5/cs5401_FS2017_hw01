@@ -5,6 +5,7 @@ import grbcp5.hw01.stochastic.Individual;
 import grbcp5.hw01.stochastic.StochasticSearch;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class EvolutionarySearch extends StochasticSearch {
@@ -130,23 +131,24 @@ public class EvolutionarySearch extends StochasticSearch {
   private Individual[] kTournSelection(
     int k,
     Individual[] pop,
-    int numSelected
+    int returnSize
   ) {
-
-    if ( numSelected != pop.length / k ) {
-      return null;
-    }
 
     /* Local Variables */
     Individual[] parents;
+    LinkedList<Individual> potentialParents;
     Individual[][] groups;
     int[] parentsPutInGroup;
     Random rnd;
     int groupToPutParentIn;
     int maxGroupSize;
+    int numSelected;
+    int rndIdx;
 
     /* Initialize */
-    parents = new Individual[ numSelected ];
+    numSelected = pop.length / k;
+    parents = new Individual[ returnSize ];
+    potentialParents = new LinkedList<>();
     groups = new Individual[ numSelected ][ k ];
     parentsPutInGroup = new int[ numSelected ];
     rnd = GRandom.getInstance();
@@ -170,12 +172,16 @@ public class EvolutionarySearch extends StochasticSearch {
 
     }
 
-    // Pick best parent from each group
+    // Pick best potential parent from each group
     for ( int p = 0; p < numSelected; p++ ) {
-      for ( int g = 0; g < k; g++ ) {
-        Arrays.sort( groups[ g ], delegate );
-        parents[ p ] = groups[ p ][ k - 1 ];
-      }
+        Arrays.sort( groups[ p ], delegate );
+        potentialParents.addLast( groups[ p ][ k - 1 ] );
+    }
+
+    // Return only the desired number of parents
+    for ( int i = 0; i < returnSize; i++ ) {
+      rndIdx = rnd.nextInt( potentialParents.size() );
+      parents[ i ] = potentialParents.remove( rndIdx );
     }
 
     return parents;

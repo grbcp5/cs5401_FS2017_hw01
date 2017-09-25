@@ -24,32 +24,6 @@ import java.util.Random;
 
 public class Main {
 
-  public static void printDashedln( int length ) {
-    for( int i = 0; i < length; i++ ) {
-      System.out.print( '-' );
-    }
-    System.out.println();
-  }
-
-  public static void printDashedln() {
-    printDashedln( 80 );
-  }
-
-   private static void printInvalidInput() {
-
-    printDashedln();
-    System.out.println(
-      "\nUsage: main <configFile> <problemDefinitionFile>\n"
-    );
-    printDashedln();
-
-  }
-
-
-
-
-
-
   public static void main( String[] args ) {
 
     if( args.length < 2 ) {
@@ -104,11 +78,28 @@ public class Main {
     int numFitnessEvals = ( int ) parameters.get( "fitnessEvals" );
     parameters.put( "fitnessEvals", ( numFitnessEvals / numRuns ) );
 
-    if( ( parameters.get( "showShapes" ) == null ) || ( boolean ) parameters
+    if( !( parameters.get( "debug" ) == null ) && ( boolean ) parameters
+      .get( "debug" ) ) {
+      Main.debug = true;
+    } else {
+      Main.debug = false;
+    }
+
+    if( !( parameters.get( "showShapes" ) == null ) && ( boolean ) parameters
       .get( "showShapes" ) ) {
+      System.out.println( "Read in shapes:" );
       for ( Shape s :
         problemDefinition.getShapes() ) {
         System.out.println( s );
+      }
+    }
+
+    if( !( parameters.get( "showConfig" ) == null ) && ( boolean ) parameters
+      .get( "showConfig" ) ) {
+      System.out.println( "Parameters:" );
+      for ( String key :
+        parameters.keySet() ) {
+        System.out.println( key + ": " + parameters.get( key ) );
       }
     }
 
@@ -174,5 +165,39 @@ public class Main {
     );
 
   } /* Main function */
+
+
+
+
+
+
+
+
+  public static void printDashedln( int length ) {
+    for( int i = 0; i < length; i++ ) {
+      System.out.print( '-' );
+    }
+    System.out.println();
+  }
+
+  public static void printDashedln() {
+    printDashedln( 80 );
+  }
+
+  private static void printInvalidInput() {
+
+    printDashedln();
+    System.out.println(
+      "\nUsage: main <configFile> <problemDefinitionFile>\n"
+    );
+    printDashedln();
+
+  }
+
+  private static boolean debug;
+
+  public static boolean debug() {
+    return Main.debug;
+  }
 
 } /* Main class */

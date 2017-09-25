@@ -1,6 +1,7 @@
 package grbcp5.hw01.stochastic.evolutionary;
 
 import grbcp5.hw01.GRandom;
+import grbcp5.hw01.Main;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.*;
@@ -28,9 +29,13 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   private double currentBestFitness;
   private BinPackingSolution[] population;
 
+  private int currentDenom;
+
   private int currentBestGeneration;
   private int prematureConverganceThreshold;
   private boolean converged;
+
+  private int bound;
 
   /* Constructor */
   public BinPackingEADelegate(
@@ -41,6 +46,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.parameters = parameters;
     this.problemDefinition = problemDefinition;
 
+    this.bound = this.problemDefinition.getSheetWidth() / 2;
+
     this.populationSize =
       ( ( Integer ) ( this.parameters.get( "populationSize" ) ) );
 
@@ -49,13 +56,17 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     randomSearchParameters.put( "fitnessEvals", this.populationSize );
     this.randomSearchDelegate = new RandomSearchDelegateForEADelegate(
       randomSearchParameters,
-      problemDefinition
+      problemDefinition,
+      bound
     );
     this.randomSearch = new RandomSearch( this.randomSearchDelegate );
 
     // Instance variables */
     this.numGenerations = 0;
     this.numNewIndividuals = 0;
+
+    this.currentDenom = 3;
+    this.bound = this.problemDefinition.getSheetWidth() / this.currentDenom;
 
     this.currentBestFitness = -1;
     this.currentBestGeneration = -1;
@@ -64,6 +75,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.prematureConverganceThreshold =
       ( int ) parameters.get( "convergenceCriterion" );
     this.converged = false;
+
   }
 
 
@@ -132,6 +144,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       this.currentBestGeneration = this.numGenerations;
 
       System.out.println( "New best of " + this.currentBestFitness );
+      updateBound( sol );
     }
 
     // Check if premature convergance
@@ -143,6 +156,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
 
+
     return this.shouldContinue();
   }
 
@@ -150,11 +164,28 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   public void handlePopulation( Individual[] pop ) {
     this.population = new BinPackingSolution[ pop.length ];
 
-    System.out.println( "Population: " );
-    for ( int i = 0; i < pop.length; i++ ) {
-      this.population[ i ] = ( BinPackingSolution ) ( pop[ i ] );
+    if( this.converged && Main.debug() ) {
+      System.out.println( "Population: " );
+      for ( int i = 0; i < pop.length; i++ ) {
+        this.population[ i ] = ( BinPackingSolution ) ( pop[ i ] );
 
-      System.out.println( "\t" + this.population[ i ].getFreePercentage() );
+        System.out.println( "\t" + this.population[ i ].getFreePercentage() );
+      }
+    }
+
+  }
+
+  private int getBound() {
+    return this.bound;
+  }
+
+  private void updateBound( BinPackingSolution sol ) {
+
+    if( sol.getFreePercentage() * sol.getSheetWidth() >
+      sol.getSheetWidth() - ( sol.getSheetWidth() / this.currentDenom ) ) {
+      System.out.println( "Updating bound" );
+      this.currentDenom++;
+      this.bound = sol.getSheetWidth() / this.currentDenom;
     }
 
   }
@@ -163,7 +194,6 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   public Individual mutate( Individual i ) {
 
     BinPackingSolution result = ( BinPackingSolution ) i.getCopy();
-    int bound;
     Random rnd = GRandom.getInstance();
     double mutationRate;
 
@@ -176,12 +206,10 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       // See if this gene should be mutated
       if ( rnd.nextDouble() <= mutationRate ) {
 
-        bound = result.getSheetWidth() / 2;
-
         // If so, mutate this gene
         result.setGene( loci, randomSearchDelegate.getRandomGene(
           loci,
-          bound
+          this.getBound()
         ) );
 
         // Fix it if it is valid
@@ -319,15 +347,18 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
 
   private BinPackingSolution[] population;
   private int currentIndex;
+  private int bound;
 
   RandomSearchDelegateForEADelegate(
     Map< String, Object > parameters,
-    BinPackingProblemDefinition problemDefinition
+    BinPackingProblemDefinition problemDefinition,
+    int bound
   ) {
     super( parameters, problemDefinition );
 
     this.population = new BinPackingSolution[ this.getNumFitnessEvalsLeft() ];
     this.currentIndex = 0;
+    this.bound = bound;
 
   }
 
@@ -346,6 +377,7 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
     BinPackingSolution resultingSoluiton;
     BinPackingSolution newSolution;
     int bound;
+    int numTries;
 
     /* Initialize */
     resultingSoluiton = ( BinPackingSolution ) ( i.getCopy() );
@@ -355,13 +387,17 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
       highLoci
     );
 
+    numTries = 0;
+
     /* Until a valid solution is found */
     while ( newSolution == null ) {
+
+      numTries++;
 
       /* Refil each location with a new random gene */
       for ( int loci = lowLoci; loci <= highLoci; loci++ ) {
 
-        bound = resultingSoluiton.getSheetWidth() / 2;
+        bound = this.bound + numTries;
 
         resultingSoluiton.setGene(
           loci,
@@ -427,6 +463,10 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
     }
 
     return rnd.nextInt( ( max - min ) + 1 ) + min;
+  }
+
+  void setBound( int bnd ) {
+    this.bound = bnd;
   }
 
   @Override

@@ -6,7 +6,7 @@ mkdir sol
 mkdir log/50Shapes
 mkdir sol/50Shapes
 mkdir log/100Shapes
-mkdir log/100Shapes
+mkdir sol/100Shapes
 mkdir log/100ShapesComplex
 mkdir log/100ShapesComplex
 

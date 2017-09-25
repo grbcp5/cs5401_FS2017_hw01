@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
 <config>
   <searchType dataType="String" >EvolutionarySearch</searchType>
-  <seedSpecified dataType="Boolean" >true</seedSpecified>
-  <seed dataType="Long" >10021996</seed>
+  <seedSpecified dataType="Boolean" >false</seedSpecified>
   <fitnessEvals dataType="Integer" >10000</fitnessEvals>
-  <runs dataType="Integer" >10</runs>
-  <logFilePath dataType="String" >./log/quickRunLog</logFilePath>
-  <solFilePath dataType="String" >./sol/quickRunSol</solFilePath>
+  <runs dataType="Integer" >5</runs>
+  <logFilePath dataType="String" >./log/50Shapes/50ShapesLog.txt</logFilePath>
+  <solFilePath dataType="String" >./sol/50Shapes/50ShapesSol.txt</solFilePath>
 
   <showShapes dataType="Boolean">true</showShapes>
   <showConfig dataType="Boolean">true</showConfig>

@@ -18,13 +18,15 @@ import grbcp5.hw01.stochastic.random.RandomSearchDelegate;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Random;
 
 public class Main {
 
-  public static void main( String[] args ) {
+  public static void main( String[] args ) throws FileNotFoundException {
 
     if( args.length < 2 ) {
 
@@ -47,6 +49,8 @@ public class Main {
     double runBestFitness;
     Individual currentBest = null;
     double currentBestFitness = -1;
+    PrintWriter logWriter;
+    PrintWriter solWriter;
 
     try {
 
@@ -103,11 +107,33 @@ public class Main {
       }
     }
 
+    logWriter = new PrintWriter(
+      ( String ) parameters.get( "logFilePath" )
+    );
+    parameters.put( "logWriter", logWriter );
+
+    solWriter = new PrintWriter(
+      ( String ) parameters.get( "solFilePath" )
+    );
+    parameters.put( "solWriter", solWriter );
+
+
+    logWriter.println( "Result Log:\n\n" );
+    logWriter.println( "Problem instance: " + args[ 1 ] );
+    logWriter.println( "Random number generator seed: " + randomSeed );
+    logWriter.println( "Parameters:" );
+    for ( String key :
+      parameters.keySet() ) {
+      logWriter.println( "\t" + key + ": " + parameters.get( key ) );
+    }
+
+
     /* Run problem */
     startTime = 0;
     for ( int r = 0; r < numRuns; r++ ) {
 
       parameters.put( "currentRun",  r );
+      logWriter.println( "\nRun " + r + ": " );
       startTime = System.currentTimeMillis();
 
       if ( parameters.get( "searchType" ).equals( "RandomSearch" ) ) {
@@ -163,6 +189,16 @@ public class Main {
     System.out.println(
       ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
     );
+    solWriter.println( currentBest.toString() );
+    logWriter.println( "\n\nBest solution found had fitness: " +
+                         currentBestFitness );
+    logWriter.println( "\nBestSolution:" );
+    logWriter.println(
+      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
+    );
+
+    logWriter.close();
+    solWriter.close();
 
   } /* Main function */
 

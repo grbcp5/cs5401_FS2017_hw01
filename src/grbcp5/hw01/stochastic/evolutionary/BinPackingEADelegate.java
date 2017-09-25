@@ -8,6 +8,7 @@ import grbcp5.hw01.stochastic.*;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
 import grbcp5.hw01.stochastic.random.RandomSearch;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -22,11 +23,16 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   private RandomSearch randomSearch;
   private RandomSearchDelegateForEADelegate randomSearchDelegate;
 
+  private PrintWriter logWriter;
+  private PrintWriter solWriter;
+
   private int numGenerations;
   private int numNewIndividuals;
 
   private BinPackingSolution currentBest;
   private double currentBestFitness;
+  private double fitnessSum;
+  private double averageFitness;
   private BinPackingSolution[] population;
 
   private int currentDenom;
@@ -51,6 +57,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.populationSize =
       ( ( Integer ) ( this.parameters.get( "populationSize" ) ) );
 
+    this.logWriter =
+       ( PrintWriter ) this.parameters.get( "logWriter");
+
     // Random Search
     Map< String, Object > randomSearchParameters = new HashMap<>();
     randomSearchParameters.put( "fitnessEvals", this.populationSize );
@@ -64,6 +73,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     // Instance variables */
     this.numGenerations = 0;
     this.numNewIndividuals = 0;
+    this.averageFitness = 0;
+    this.fitnessSum = 0;
 
     this.currentDenom = 3;
     this.bound = this.problemDefinition.getSheetWidth() / this.currentDenom;
@@ -87,6 +98,12 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     System.out.println( "Run " + run + ": End of generation: " + this
       .numGenerations );
+
+    this.logWriter.println(
+      this.numNewIndividuals + "\t" +
+        this.averageFitness + "\t" +
+        this.currentBestFitness
+    );
 
     this.numGenerations++;
   }
@@ -130,6 +147,10 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     run = ( int ) ( parameters.get( "currentRun" ) );
     this.numNewIndividuals++;
+
+    // Update average
+    this.fitnessSum += sol.getFreePercentage();
+    this.averageFitness = this.fitnessSum / this.numNewIndividuals;
 
     // Print to keep application responsive
     if ( this.numNewIndividuals % 100 == 0 ) {

@@ -3,7 +3,7 @@
   <searchType dataType="String" >EvolutionarySearch</searchType>
   <seedSpecified dataType="Boolean" >false</seedSpecified>
   <fitnessEvals dataType="Integer" >10000</fitnessEvals>
-  <runs dataType="Integer" >5</runs>
+  <runs dataType="Integer" >30</runs>
   <logFilePath dataType="String" >./log/50Shapes/50ShapesLog.txt</logFilePath>
   <solFilePath dataType="String" >./sol/50Shapes/50ShapesSol.txt</solFilePath>
 

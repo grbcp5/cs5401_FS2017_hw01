@@ -26,6 +26,8 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract double getMutationRate();
 
+  public abstract int getNumParentsPerChild();
+
   public abstract String getMultiaryOperator();
 
   public abstract int getNumCrossoverPoints();
@@ -33,6 +35,8 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
   public abstract int getNumChildren();
 
   public abstract Gene getBestGene( Gene g1, Gene g2 );
+
+  public abstract void handlePopulation( Individual[] population );
 
   public abstract int getParentSelectionTournamentSize();
 }

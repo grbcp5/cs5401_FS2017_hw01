@@ -1,5 +1,7 @@
 package grbcp5.hw01.stochastic;
 
+import grbcp5.hw01.stochastic.evolutionary.PrematureConvergenceException;
+
 import java.util.Comparator;
 
 public abstract class StochasticDelegate implements Comparator< Individual> {

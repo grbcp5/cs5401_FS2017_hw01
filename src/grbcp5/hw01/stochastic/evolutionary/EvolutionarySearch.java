@@ -27,11 +27,6 @@ public class EvolutionarySearch extends StochasticSearch {
     // create initial population
     population = delegate.getInitialPopulation();
 
-//    for ( Individual i :
-//      population ) {
-//      System.out.println( "Individual fitness: " + delegate.fitness( i ) );
-//    }
-
     // Evolve initial population
     while ( delegate.shouldContinue() ) {
 
@@ -59,6 +54,8 @@ public class EvolutionarySearch extends StochasticSearch {
 
       delegate.signalEndOfGeneration();
     }
+
+    delegate.handlePopulation( population );
 
     return delegate.getBestIndividual();
   }
@@ -197,7 +194,10 @@ public class EvolutionarySearch extends StochasticSearch {
     /* Create each child */
     for ( int c = 0; c < numChildren; c++ ) {
       children[ c ] = this.createChild(
-        selectParents( pop, 2 )
+        selectParents(
+          pop,
+          delegate.getNumParentsPerChild()
+        )
       );
       assert children[ c ] != null;
       children[ c ] = delegate.mutate( children[ c ] );
@@ -218,11 +218,6 @@ public class EvolutionarySearch extends StochasticSearch {
     Individual child;
     int n;
 
-//    for ( Individual parent :
-//      parents ) {
-//      System.out.println( "Parent fitness: " + delegate.fitness( parent ) );
-//    }
-
     /* Initialize */
     n = delegate.getNumCrossoverPoints();
 
@@ -233,11 +228,6 @@ public class EvolutionarySearch extends StochasticSearch {
         assert child != null;
     }
 
-//    for ( Individual parent :
-//      parents ) {
-//      System.out.println( "Parent fitness: " + delegate.fitness( parent ) );
-//    }
-//    System.out.println( "Child fitness: " + delegate.fitness( child ) + "\n" );
 
     return child;
   }

@@ -1,13 +1,9 @@
 package grbcp5.hw01.stochastic.evolutionary;
 
 import grbcp5.hw01.GRandom;
-import grbcp5.hw01.Main;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
 import grbcp5.hw01.shape.Shape;
-import grbcp5.hw01.stochastic.BinPackingGene;
-import grbcp5.hw01.stochastic.BinPackingSolution;
-import grbcp5.hw01.stochastic.Gene;
-import grbcp5.hw01.stochastic.Individual;
+import grbcp5.hw01.stochastic.*;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
 import grbcp5.hw01.stochastic.random.RandomSearch;
 
@@ -19,7 +15,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
 
   private Map< String, Object > parameters;
-  BinPackingProblemDefinition problemDefinition;
+  private BinPackingProblemDefinition problemDefinition;
   private int populationSize;
 
   private RandomSearch randomSearch;
@@ -30,6 +26,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private BinPackingSolution currentBest;
   private double currentBestFitness;
+  private BinPackingSolution[] population;
+
+  private int currentBestGeneration;
+  private int prematureConverganceThreshold;
+  private boolean converged;
 
   /* Constructor */
   public BinPackingEADelegate(
@@ -56,7 +57,13 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.numGenerations = 0;
     this.numNewIndividuals = 0;
 
-    currentBestFitness = -1;
+    this.currentBestFitness = -1;
+    this.currentBestGeneration = -1;
+    this.population = new BinPackingSolution[ populationSize ];
+
+    this.prematureConverganceThreshold =
+      ( int ) parameters.get( "convergenceCriterion" );
+    this.converged = false;
   }
 
 
@@ -74,38 +81,89 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public boolean shouldContinue() {
-    return this.numNewIndividuals <
-      ( ( int )( parameters.get( "fitnessEvals" ) ) );
+
+    Integer run;
+
+
+    if ( this.converged ) {
+      run = ( int ) ( parameters.get( "currentRun" ) );
+      if ( run == null ) {
+        run = 0;
+      }
+      System.out.println( "Terminating run " + run + " due to premature " +
+                            "convergence." );
+      return false;
+    }
+
+    if ( this.numNewIndividuals >=
+      ( ( int ) ( parameters.get( "fitnessEvals" ) ) )
+      ) {
+      run = ( int ) ( parameters.get( "currentRun" ) );
+      if ( run == null ) {
+        run = 0;
+      }
+      System.out.println( "Terminating run " + run + " due to fitness eval " +
+                            "exhaustion." );
+      return false;
+    }
+
+    return true;
   }
 
   @Override
   public boolean handleNewIndividual( Individual i ) {
-    BinPackingSolution sol = ( BinPackingSolution )( i );
+    BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
     int run;
 
     run = ( int ) ( parameters.get( "currentRun" ) );
     this.numNewIndividuals++;
 
-    if( this.numNewIndividuals % 100 == 0 ) {
+    // Print to keep application responsive
+    if ( this.numNewIndividuals % 100 == 0 ) {
       System.out.println( "Run " + run + ": Used " + this.numNewIndividuals +
                             " evaluations." );
     }
 
-    if( sol.getFreePercentage() > this.currentBestFitness ) {
+    // Update if new best
+    if ( sol.getFreePercentage() > this.currentBestFitness ) {
       this.currentBest = sol;
       this.currentBestFitness = sol.getFreePercentage();
+      this.currentBestGeneration = this.numGenerations;
 
       System.out.println( "New best of " + this.currentBestFitness );
+    }
+
+    // Check if premature convergance
+    if ( ( this.numGenerations - this.currentBestGeneration ) >=
+      this.prematureConverganceThreshold ) {
+
+      this.converged = true;
+      return false;
+
     }
 
     return this.shouldContinue();
   }
 
   @Override
+  public void handlePopulation( Individual[] pop ) {
+    this.population = new BinPackingSolution[ pop.length ];
+
+    System.out.println( "Population: " );
+    for ( int i = 0; i < pop.length; i++ ) {
+      this.population[ i ] = ( BinPackingSolution ) ( pop[ i ] );
+
+      System.out.println( "\t" + this.population[ i ].getFreePercentage() );
+    }
+
+  }
+
+  @Override
   public Individual mutate( Individual i ) {
 
-    Individual result = i.getCopy();
+    BinPackingSolution result = ( BinPackingSolution ) i.getCopy();
+    int bound;
     Random rnd = GRandom.getInstance();
     double mutationRate;
 
@@ -118,8 +176,16 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       // See if this gene should be mutated
       if ( rnd.nextDouble() <= mutationRate ) {
 
+        bound = result.getSheetWidth() / 2;
+
         // If so, mutate this gene
-        result.setGene( loci, randomSearchDelegate.getRandomGene( loci ) );
+        result.setGene( loci, randomSearchDelegate.getRandomGene(
+          loci,
+          bound
+        ) );
+
+        // Fix it if it is valid
+        result = ( BinPackingSolution ) repair( result, loci, loci );
       }
 
     }
@@ -130,6 +196,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   @Override
   public String getSurviorSelectionMethod() {
     return ( ( String ) ( this.parameters.get( "survivorSelectionMethod" ) ) );
+  }
+
+  @Override
+  public int getNumParentsPerChild() {
+    return ( ( int ) ( parameters.get( "parentsPerChild" ) ) );
   }
 
   @Override
@@ -173,7 +244,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public Individual getEmptyIndividual() {
-    BinPackingSolution result = new BinPackingSolution(
+
+    return new BinPackingSolution(
       new BinPackingGene[ this.problemDefinition.getNumShapes() ],
       this.problemDefinition.getShapes(),
       this.problemDefinition.getSheetHeight(),
@@ -181,8 +253,6 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       new Shape( this.problemDefinition.getSheetHeight(), this
         .problemDefinition.getSheetWidth() )
     );
-
-    return result;
   }
 
   public int getNumChildren() {
@@ -194,7 +264,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     BinPackingGene bpg1 = ( BinPackingGene ) g1;
     BinPackingGene bpg2 = ( BinPackingGene ) g2;
 
-    if( bpg1 == null || bpg1.getX() < bpg2.getX() ) {
+    if ( bpg1 == null || bpg1.getX() < bpg2.getX() ) {
       return bpg2;
     } else {
       return bpg1;
@@ -267,6 +337,96 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
     currentIndex++;
 
     return this.shouldContinue();
+  }
+
+  @Override
+  public Individual repair( Individual i, int lowLoci, int highLoci ) {
+
+    /* Local variables */
+    BinPackingSolution resultingSoluiton;
+    BinPackingSolution newSolution;
+    int bound;
+
+    /* Initialize */
+    resultingSoluiton = ( BinPackingSolution ) ( i.getCopy() );
+    newSolution = BinPackingSolutionChecker.checkSolution(
+      resultingSoluiton,
+      lowLoci,
+      highLoci
+    );
+
+    /* Until a valid solution is found */
+    while ( newSolution == null ) {
+
+      /* Refil each location with a new random gene */
+      for ( int loci = lowLoci; loci <= highLoci; loci++ ) {
+
+        bound = resultingSoluiton.getSheetWidth() / 2;
+
+        resultingSoluiton.setGene(
+          loci,
+          this.getRandomGene(
+            loci,
+            bound
+          ) );
+      }
+
+      /* Check to see if that solution is valid */
+      newSolution = BinPackingSolutionChecker.checkSolution(
+        resultingSoluiton,
+        lowLoci,
+        highLoci
+      );
+
+    }
+
+    return newSolution;
+  }
+
+  public Gene getRandomGene( int loci, int maxCol ) {
+
+    /* Local variabes*/
+    Random rnd;
+    Shape tryShape;
+    int minRow;
+    int maxRow;
+    int tryRow;
+
+    int minCol;
+    int tryCol;
+
+    int tryRotation;
+
+    /* Initialize */
+    rnd = GRandom.getInstance();
+    tryShape = this.problemDefinition.getShapes()[ loci ];
+
+    /* Rotate shape */
+    tryRotation = rnd.nextInt( 3 );
+    tryShape = tryShape.rotate( tryRotation );
+
+    /* Get random row */
+    minRow = tryShape.getStartRow();
+    maxRow = this.problemDefinition.getSheetHeight()
+      - ( tryShape.getNumRows() - tryShape.getStartRow() );
+    tryRow = randInt( rnd, minRow, maxRow );
+
+    /* Get random Column */
+    minCol = tryShape.getStartCol();
+    tryCol = randInt( rnd, minCol, maxCol );
+
+    /* Return generated random gene configuration */
+    return new BinPackingGene( tryCol, tryRow, tryRotation );
+  }
+
+  /* Private helper for getRandomGene */
+  private static int randInt( Random rnd, int min, int max ) {
+
+    if ( !( ( max - min ) + 1 > 0 ) ) {
+      max = max;
+    }
+
+    return rnd.nextInt( ( max - min ) + 1 ) + min;
   }
 
   @Override

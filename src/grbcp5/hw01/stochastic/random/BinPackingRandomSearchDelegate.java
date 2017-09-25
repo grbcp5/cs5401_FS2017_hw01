@@ -11,8 +11,8 @@ import java.util.Random;
 
 public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
 
-  private Map< String, Object > parameters;
-  private BinPackingProblemDefinition problemDefinition;
+  protected Map< String, Object > parameters;
+  protected BinPackingProblemDefinition problemDefinition;
   private int numFitnessEvalsLeft;
   private BinPackingSolution currentBest;
   private double currentBestFitness;

@@ -27,6 +27,13 @@ public class EvolutionarySearch extends StochasticSearch {
     // create initial population
     population = delegate.getInitialPopulation();
 
+    for ( Individual i :
+      population ) {
+      delegate.handleNewIndividual( i );
+    }
+
+    delegate.signalEndOfGeneration();
+
     // Evolve initial population
     while ( delegate.shouldContinue() ) {
 

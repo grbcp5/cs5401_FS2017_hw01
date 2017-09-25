@@ -80,7 +80,6 @@ public class Main {
 
     int numRuns = ( ( Integer ) ( parameters.get( "runs" ) ) );
     int numFitnessEvals = ( int ) parameters.get( "fitnessEvals" );
-    parameters.put( "fitnessEvals", ( numFitnessEvals / numRuns ) );
 
     if( !( parameters.get( "debug" ) == null ) && ( boolean ) parameters
       .get( "debug" ) ) {

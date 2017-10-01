@@ -41,6 +41,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   private int prematureConverganceThreshold;
   private boolean converged;
 
+  private double penaltyCoefficient;
+
   private int bound;
 
   /* Constructor */
@@ -58,7 +60,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       ( ( Integer ) ( this.parameters.get( "populationSize" ) ) );
 
     this.logWriter =
-       ( PrintWriter ) this.parameters.get( "logWriter");
+      ( PrintWriter ) this.parameters.get( "logWriter" );
 
     // Random Search
     Map< String, Object > randomSearchParameters = new HashMap<>();
@@ -86,6 +88,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.prematureConverganceThreshold =
       ( int ) parameters.get( "convergenceCriterion" );
     this.converged = false;
+
+    this.penaltyCoefficient = -1;
 
   }
 
@@ -149,7 +153,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.numNewIndividuals++;
 
     // Update average
-    this.fitnessSum += sol.getFreePercentage();
+    this.fitnessSum += this.fitness( sol );
     this.averageFitness = this.fitnessSum / this.numNewIndividuals;
 
     // Print to keep application responsive
@@ -159,9 +163,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     }
 
     // Update if new best
-    if ( sol.getFreePercentage() > this.currentBestFitness ) {
+    if ( this.fitness( sol ) > this.currentBestFitness ) {
       this.currentBest = sol;
-      this.currentBestFitness = sol.getFreePercentage();
+      this.currentBestFitness = this.fitness( sol );
       this.currentBestGeneration = this.numGenerations;
 
       System.out.println( "New best of " + this.currentBestFitness );
@@ -185,12 +189,12 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   public void handlePopulation( Individual[] pop ) {
     this.population = new BinPackingSolution[ pop.length ];
 
-    if( this.converged && Main.debug() ) {
+    if ( this.converged && Main.debug() ) {
       System.out.println( "Population: " );
       for ( int i = 0; i < pop.length; i++ ) {
         this.population[ i ] = ( BinPackingSolution ) ( pop[ i ] );
 
-        System.out.println( "\t" + this.population[ i ].getFreePercentage() );
+        System.out.println( "\t" + this.fitness( this.population[ i ] ) );
       }
     }
 
@@ -202,7 +206,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private void updateBound( BinPackingSolution sol ) {
 
-    if( sol.getFreePercentage() * sol.getSheetWidth() >
+    if( sol.getPenaltyValue() != null ) {
+      return;
+    }
+
+    if ( this.fitness( sol ) * sol.getSheetWidth() >
       sol.getSheetWidth() - ( sol.getSheetWidth() / this.currentDenom ) ) {
       System.out.println( "Updating bound" );
       this.currentDenom++;
@@ -345,11 +353,19 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     Shape resultingSheet = sol.getResultingSheet();
     int trimW;
     int totlW;
+    double fitness;
+    double penalty = 0.0;
 
     trimW = resultingSheet.getTrimmedWidth();
     totlW = resultingSheet.getNumCols();
 
-    return ( totlW - trimW ) / ( ( double ) ( totlW ) );
+    fitness = ( totlW - trimW ) / ( ( double ) ( totlW ) );
+
+    if ( sol.getPenaltyValue() != null ) {
+      penalty = sol.getPenaltyValue();
+    }
+
+    return fitness - penalty;
   }
 
   @Override
@@ -362,7 +378,43 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     return fitness1.compareTo( fitness2 );
   }
-}
+
+
+  /*
+
+  Assignment 1C additions
+
+   */
+
+  @Override
+  public String getConstraintSatisfactionType() {
+    return ( String ) parameters.get( "constraintSatisfaction" );
+  }
+
+  @Override
+  public double getPenaltyCoefficient() {
+
+    if ( this.penaltyCoefficient < 0 ) {
+      this.penaltyCoefficient
+        = ( Double ) parameters.get( "penaltyCoefficient" );
+    }
+
+    assert this.penaltyCoefficient >= 0;
+
+    return this.penaltyCoefficient;
+  }
+
+} /* Bin packing EA delegate */
+
+
+
+/*
+
+  Random search for EA delegate
+
+ */
+
+
 
 class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
 
@@ -503,5 +555,6 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
   public BinPackingSolution[] getPopulation() {
     return this.population;
   }
+
 
 }

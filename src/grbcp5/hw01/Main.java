@@ -31,6 +31,7 @@ public class Main {
 
       printInvalidInput();
       return;
+
     }
 
     /* Local Variables */

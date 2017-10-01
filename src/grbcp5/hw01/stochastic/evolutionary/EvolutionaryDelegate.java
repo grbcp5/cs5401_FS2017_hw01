@@ -39,4 +39,11 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
   public abstract void handlePopulation( Individual[] population );
 
   public abstract int getParentSelectionTournamentSize();
+
+  /* Assignment 1C additons */
+
+  public abstract String getConstraintSatisfactionType();
+
+  public abstract double getPenaltyCoefficient();
+
 }

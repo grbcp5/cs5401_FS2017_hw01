@@ -4,6 +4,8 @@ public abstract class Individual {
 
   protected Gene[] genes;
 
+  protected Double penaltyValue;
+
   public Individual( Gene[] copyGenes ) {
 
     this.genes = new Gene[ copyGenes.length ];
@@ -12,6 +14,8 @@ public abstract class Individual {
       this.genes[ i ] = ( copyGenes[ i ] == null ) ?
         null : copyGenes[ i ].getCopy();
     }
+
+    this.penaltyValue = null;
 
   }
 
@@ -36,6 +40,14 @@ public abstract class Individual {
 
     this.genes[ loci ] = gene;
     return true;
+  }
+
+  public Double getPenaltyValue() {
+    return penaltyValue;
+  }
+
+  public void setPenaltyValue( Double penaltyValue ) {
+    this.penaltyValue = penaltyValue;
   }
 
   public abstract Individual getCopy();

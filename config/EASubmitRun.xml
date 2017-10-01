@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<config>
+  <searchType dataType="String" >EvolutionarySearch</searchType>
+  <seedSpecified dataType="Boolean" >true</seedSpecified>
+  <seed dataType="Long" >10021996</seed>
+  <fitnessEvals dataType="Integer" >10000</fitnessEvals>
+  <runs dataType="Integer" >10</runs>
+  <logFilePath dataType="String" >./log/quickRunLog</logFilePath>
+  <solFilePath dataType="String" >./sol/quickRunSol</solFilePath>
+
+  <showShapes dataType="Boolean">true</showShapes>
+  <showConfig dataType="Boolean">true</showConfig>
+
+  <!-- Evolutionary Parameters-->
+  <populationSize dataType="Integer">75</populationSize>
+  <numChildren dataType="Integer">25</numChildren>
+  <mutationRate dataType="Double">0.25</mutationRate>
+  <convergenceCriterion dataType="Integer">5</convergenceCriterion>
+
+  <parentSelectionMethod dataType="String">kTournament</parentSelectionMethod>
+  <parentSelectionTournamentSize dataType="Integer">2</parentSelectionTournamentSize>
+  <parentsPerChild dataType="Integer">5</parentsPerChild>
+
+  <survivorSelectionMethod dataType="String">kTournament</survivorSelectionMethod>
+  <survivorSelectionTournamentSize dataType="Integer">2</survivorSelectionTournamentSize>
+  <multiaryOperator dataType="String">nPointCrossover</multiaryOperator>
+  <numCrossoverPoints dataType="Integer">1</numCrossoverPoints>
+
+</config>

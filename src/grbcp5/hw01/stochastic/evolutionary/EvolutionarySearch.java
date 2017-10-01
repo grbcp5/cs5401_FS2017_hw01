@@ -200,6 +200,11 @@ public class EvolutionarySearch extends StochasticSearch {
 
     /* Create each child */
     for ( int c = 0; c < numChildren; c++ ) {
+
+      if( c == 19 ) {
+        c = 19;
+      }
+
       children[ c ] = this.createChild(
         selectParents(
           pop,
@@ -225,12 +230,10 @@ public class EvolutionarySearch extends StochasticSearch {
     Individual child;
     int n;
 
-    /* Initialize */
-    n = delegate.getNumCrossoverPoints();
-
     switch ( delegate.getMultiaryOperator() ) {
       case "nPointCrossover":
       default: // default to n point crossover
+        n = delegate.getNumCrossoverPoints();
         child = MultiaryOperator.nPointCrossOver( n, parents, delegate );
         assert child != null;
     }

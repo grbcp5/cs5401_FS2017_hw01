@@ -46,4 +46,6 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract double getPenaltyCoefficient();
 
+  public abstract void handlePotentiallyInvalidIndividual( Individual i );
+
 }

@@ -278,6 +278,24 @@ public class Shape {
     return new Shape( newShapeDefiniton, this.startRow, this.startCol );
   }
 
+  public Shape eatWithoutConcern( Shape innerShape, int row, int col ) {
+    boolean[][] newShapeDefiniton;
+    newShapeDefiniton = this.getMatrix();
+
+    for ( int r = 0; r < innerShape.getNumRows(); r++ ) {
+      for ( int c = 0; c < innerShape.getNumCols(); c++ ) {
+
+        if ( innerShape.matrix[ r ][ c ] ) {
+
+          newShapeDefiniton[ row + r ][ col + c ] = true;
+
+        } /* If inner shape populates this square */
+      } /* For each inner shape column */
+    } /* For each inner shape row */
+
+    return new Shape( newShapeDefiniton, this.startRow, this.startCol );
+  }
+
   @Override
   public String toString() {
     String result = "";

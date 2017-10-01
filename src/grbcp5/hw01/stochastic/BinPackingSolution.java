@@ -72,7 +72,11 @@ public final class BinPackingSolution extends Individual {
 
     for ( Gene gene :
       this.genes ) {
-      sb.append( gene.toString() + "\n" );
+      if( gene == null ) {
+        sb.append( "null\n" );
+      } else {
+        sb.append( gene.toString() + "\n" );
+      }
     }
 
     return sb.toString();

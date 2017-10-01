@@ -57,4 +57,31 @@ public class BinPackingSolutionChecker {
     return newSol;
   }
 
+  public static Shape getSheetWithoutConcern(
+    BinPackingSolution sol
+  ) {
+
+    Shape sheet = new Shape( sol.getSheetHeight(), sol.getSheetWidth() );
+    Shape[] shapes = sol.getShapes();
+    Shape rotatedShape;
+    int shapeRowIdx;
+    int shapeColIdx;
+
+
+    for( int i = 0; i < shapes.length; i++ ) {
+      rotatedShape = shapes[ i ].rotate(
+        ( ( BinPackingGene )( sol.getGenes()[ i ] ) ).getRotation()
+      );
+
+      shapeRowIdx = ( ( BinPackingGene )( sol.getGenes()[ i ] ) ).getY()
+        - rotatedShape.getStartRow();
+      shapeColIdx = ( ( BinPackingGene )( sol.getGenes()[ i ] ) ).getX()
+        - rotatedShape.getStartCol();
+
+      sheet = sheet.eatWithoutConcern( rotatedShape, shapeRowIdx, shapeColIdx );
+    }
+
+    return sheet;
+  }
+
 }

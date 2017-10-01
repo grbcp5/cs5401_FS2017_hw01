@@ -404,6 +404,24 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     return this.penaltyCoefficient;
   }
 
+  @Override
+  public void handlePotentiallyInvalidIndividual( Individual i ) {
+    BinPackingSolution sol = ( BinPackingSolution ) i;
+    BinPackingSolution check;
+
+    check = BinPackingSolutionChecker.checkSolution( sol, 0, sol.getShapes()
+      .length - 1 );
+
+    if( check != null ) {
+      sol.setSheet( check.getResultingSheet() );
+      return;
+    }
+
+    sol.setPenaltyValue( this.getPenaltyCoefficient() );
+    sol.setSheet( BinPackingSolutionChecker.getSheetWithoutConcern( sol ) );
+
+  }
+
 } /* Bin packing EA delegate */
 
 

@@ -95,16 +95,27 @@ public class MultiaryOperator {
     resultingIndividual = delegate.getEmptyIndividual();
 
     for ( int cop = 0; cop < crossOverPoints.length; cop++ ) {
+      currrentIndividual = individuals[ cop ];
       for ( curIdx = curIdx; curIdx <= crossOverPoints[ cop ]; curIdx++ ) {
-        currrentIndividual = individuals[ cop ];
 
         tryGene = currrentIndividual.getGenes()[ curIdx ].getCopy();
         resultingIndividual.setGene( curIdx, tryGene );
 
-        resultingIndividual = delegate.repair( resultingIndividual, curIdx,
-                                              curIdx );
+        if( delegate.getConstraintSatisfactionType().toLowerCase()
+                    .equals( "penalty" ) ) {
+
+        } else { // Default to repair function
+          resultingIndividual = delegate.repair( resultingIndividual, curIdx,
+                                                 curIdx );
+        }
+
 
       }
+    }
+
+    if( delegate.getConstraintSatisfactionType().toLowerCase()
+                .equals( "penalty" ) ) {
+      delegate.handlePotentiallyInvalidIndividual( resultingIndividual );
     }
 
     return resultingIndividual;

@@ -28,8 +28,8 @@
 
 
   <!-- Assignment 1C Configurations -->
-  <constraintSatisfaction dataType="String">Repair</constraintSatisfaction>
-  <penaltyCoefficient dataType="Double">10</penaltyCoefficient>
+  <constraintSatisfaction dataType="String">penalty</constraintSatisfaction>
+  <penaltyCoefficient dataType="Double">0.0</penaltyCoefficient>
 
   <survivalStrategy dataType="String">Plus</survivalStrategy>
 

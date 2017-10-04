@@ -22,7 +22,7 @@
   <parentSelectionTournamentSize dataType="Integer">4</parentSelectionTournamentSize>
   <parentsPerChild dataType="Integer">5</parentsPerChild>
 
-  <survivorSelectionMethod dataType="String">kTournament</survivorSelectionMethod>
+  <survivorSelectionMethod dataType="String">FitnessProportional</survivorSelectionMethod>
   <survivorSelectionTournamentSize dataType="Integer">4</survivorSelectionTournamentSize>
   <multiaryOperator dataType="String">nPointCrossover</multiaryOperator>
   <numCrossoverPoints dataType="Integer">4</numCrossoverPoints>

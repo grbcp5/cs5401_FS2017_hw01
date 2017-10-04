@@ -73,14 +73,17 @@ public class EvolutionarySearch extends StochasticSearch {
   ) {
 
     int k;
-    String method = delegate.getParentSelectionMethod();
+    String method = delegate.getParentSelectionMethod().toLowerCase();
 
     switch ( method ) {
-      case "kTournament":
+      case "ktournament":
         k = delegate.getParentSelectionTournamentSize();
         return this.kTournSelection( k, population, numParents, true );
 
-      case "fitnessProportional":
+      case "uniformrandom":
+        return this.uniformRandomSelection( population, numParents );
+
+      case "fitnessproportional":
       default: // Default to fitnessProportional
         return this
           .fitnessProportionalParentSelection( population, numParents );
@@ -133,6 +136,28 @@ public class EvolutionarySearch extends StochasticSearch {
     }
 
     return parents;
+  }
+
+  private Individual[] uniformRandomSelection(
+    Individual[] surplus,
+    int numToSelect
+  ) {
+
+    /* Local varaibles */
+    Individual[] result;
+    List< Individual > sur = new LinkedList<>( Arrays.asList( surplus ) );
+    int rndIdx;
+    Random rnd;
+
+    result = new Individual[ numToSelect ];
+    rnd = GRandom.getInstance();
+
+    for ( int i = 0; i < numToSelect; i++ ) {
+      rndIdx = rnd.nextInt( sur.size() );
+      result[ i ] = sur.remove( rndIdx );
+    }
+
+    return result;
   }
 
   private Individual[] kTournSelection(
@@ -285,11 +310,21 @@ public class EvolutionarySearch extends StochasticSearch {
       );
     }
 
-    switch ( delegate.getSurviorSelectionMethod() ) {
-      case "kTournament":
+    switch ( delegate.getSurviorSelectionMethod().toLowerCase() ) {
+      case "ktournament":
         k = delegate.getSurvivalTournamentSize();
         survivors = kTournSelection( k, surplus, population.length, false );
         break;
+
+      case "uniformrandom":
+        survivors = uniformRandomSelection( surplus, population.length );
+        break;
+
+      case "fitnessproportional":
+        survivors = fitnessProportionalParentSelection( surplus, population
+          .length );
+        break;
+
       case "truncation":
       default: // default to truncation
         survivors = survivalTruncation( surplus, population.length );

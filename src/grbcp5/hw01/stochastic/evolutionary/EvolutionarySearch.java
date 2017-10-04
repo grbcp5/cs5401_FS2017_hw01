@@ -247,25 +247,43 @@ public class EvolutionarySearch extends StochasticSearch {
 
     Individual[] surplus;
     Individual[] survivors;
+    String survivalStrategyType;
     int k;
 
-    surplus = new Individual[ population.length + children.length ];
+    survivalStrategyType = delegate.getSurvivalStrategyType();
 
-    System.arraycopy(
-      population,
-      0,
-      surplus,
-      0,
-      population.length
-    );
+    if( survivalStrategyType.toLowerCase().equals( "comma" ) ) {
 
-    System.arraycopy(
-      children,
-      0,
-      surplus,
-      population.length,
-      children.length
-    );
+      surplus = new Individual[ children.length ];
+
+      System.arraycopy(
+        children,
+        0,
+        surplus,
+        0,
+        children.length
+      );
+
+    } else { /* Default to plus */
+
+      surplus = new Individual[ population.length + children.length ];
+
+      System.arraycopy(
+        population,
+        0,
+        surplus,
+        0,
+        population.length
+      );
+
+      System.arraycopy(
+        children,
+        0,
+        surplus,
+        population.length,
+        children.length
+      );
+    }
 
     switch ( delegate.getSurviorSelectionMethod() ) {
       case "kTournament":

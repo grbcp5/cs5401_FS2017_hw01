@@ -13,8 +13,8 @@
   <debug dataType="Boolean">true</debug>
 
   <!-- Evolutionary Parameters-->
-  <populationSize dataType="Integer">200</populationSize>
-  <numChildren dataType="Integer">75</numChildren>
+  <populationSize dataType="Integer">75</populationSize>
+  <numChildren dataType="Integer">150</numChildren>
   <mutationRate dataType="Double">0.75</mutationRate>
   <convergenceCriterion dataType="Integer">15</convergenceCriterion>
 
@@ -32,6 +32,7 @@
   <constraintSatisfaction dataType="String">repair</constraintSatisfaction>
   <penaltyCoefficient dataType="Double">0.33</penaltyCoefficient>
 
-  <survivalStrategy dataType="String">Plus</survivalStrategy>
+  <survivalStrategy dataType="String">Comma</survivalStrategy>
+
 
 </config>

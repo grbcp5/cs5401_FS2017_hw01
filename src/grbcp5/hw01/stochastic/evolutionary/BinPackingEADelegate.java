@@ -448,6 +448,10 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   }
 
+  @Override
+  public String getSurvivalStrategyType() {
+    return ( String ) parameters.get( "survivalStrategy" );
+  }
 } /* Bin packing EA delegate */
 
 

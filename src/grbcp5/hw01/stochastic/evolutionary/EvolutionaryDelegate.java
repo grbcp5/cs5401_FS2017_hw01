@@ -48,4 +48,6 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract void handlePotentiallyInvalidIndividual( Individual i );
 
+  public abstract String getSurvivalStrategyType();
+
 }

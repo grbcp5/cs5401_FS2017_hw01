@@ -45,6 +45,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private int bound;
 
+  private int invalidIndividuals;
+
   /* Constructor */
   public BinPackingEADelegate(
     Map< String, Object > parameters,
@@ -91,6 +93,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     this.penaltyCoefficient = -1;
 
+    this.invalidIndividuals = 0;
+
   }
 
 
@@ -110,6 +114,14 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     );
 
     this.numGenerations++;
+
+    System.out.println( "Generation: " + this.numGenerations + " had " + this
+      .invalidIndividuals +
+    " (" + ( this.invalidIndividuals / ( float ) this.populationSize) + ") " +
+      "invalid " +
+                          "individuals." );
+
+    this.invalidIndividuals = 0;
   }
 
   @Override
@@ -181,6 +193,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
 
+    if( sol.getPenaltyValue() != null ) {
+      this.invalidIndividuals++;
+    }
 
     return this.shouldContinue();
   }
@@ -242,9 +257,19 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
         ) );
 
         // Fix it if it is valid
-        result = ( BinPackingSolution ) repair( result, loci, loci );
+        if( this.getConstraintSatisfactionType().toLowerCase().equals(
+          "penalty" ) ) {
+
+        } else {
+          result = ( BinPackingSolution ) repair( result, loci, loci );
+        }
       }
 
+    }
+
+    if( this.getConstraintSatisfactionType().toLowerCase().equals(
+      "penalty" ) ) {
+      this.handlePotentiallyInvalidIndividual( result );
     }
 
     return result;
@@ -413,6 +438,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       .length - 1 );
 
     if( check != null ) {
+      sol.setPenaltyValue( null );
       sol.setSheet( check.getResultingSheet() );
       return;
     }

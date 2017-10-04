@@ -84,19 +84,24 @@ public final class BinPackingSolution extends Individual {
 
   @Override
   public Individual getCopy() {
+    BinPackingSolution result;
     BinPackingGene[] thisGenes = new BinPackingGene[ this.genes.length ];
 
     for( int i = 0; i < thisGenes.length; i++ ) {
       thisGenes[ i ] = ( BinPackingGene )( this.genes[ i ] );
     }
 
-    return new BinPackingSolution(
+    result = new BinPackingSolution(
       thisGenes,
       this.shapes,
       this.sheetHeight,
       this.sheetWidth,
       this.resultingSheet
     );
+
+    result.penaltyValue = this.penaltyValue;
+
+    return result;
   }
 
 

@@ -10,26 +10,27 @@
 
   <showShapes dataType="Boolean">true</showShapes>
   <showConfig dataType="Boolean">true</showConfig>
+  <debug dataType="Boolean">true</debug>
 
   <!-- Evolutionary Parameters-->
-  <populationSize dataType="Integer">75</populationSize>
-  <numChildren dataType="Integer">25</numChildren>
-  <mutationRate dataType="Double">0.25</mutationRate>
-  <convergenceCriterion dataType="Integer">5</convergenceCriterion>
+  <populationSize dataType="Integer">200</populationSize>
+  <numChildren dataType="Integer">75</numChildren>
+  <mutationRate dataType="Double">0.75</mutationRate>
+  <convergenceCriterion dataType="Integer">15</convergenceCriterion>
 
   <parentSelectionMethod dataType="String">kTournament</parentSelectionMethod>
-  <parentSelectionTournamentSize dataType="Integer">2</parentSelectionTournamentSize>
+  <parentSelectionTournamentSize dataType="Integer">4</parentSelectionTournamentSize>
   <parentsPerChild dataType="Integer">5</parentsPerChild>
 
   <survivorSelectionMethod dataType="String">kTournament</survivorSelectionMethod>
-  <survivorSelectionTournamentSize dataType="Integer">2</survivorSelectionTournamentSize>
+  <survivorSelectionTournamentSize dataType="Integer">4</survivorSelectionTournamentSize>
   <multiaryOperator dataType="String">nPointCrossover</multiaryOperator>
-  <numCrossoverPoints dataType="Integer">1</numCrossoverPoints>
+  <numCrossoverPoints dataType="Integer">4</numCrossoverPoints>
 
 
   <!-- Assignment 1C Configurations -->
-  <constraintSatisfaction dataType="String">penalty</constraintSatisfaction>
-  <penaltyCoefficient dataType="Double">0.0</penaltyCoefficient>
+  <constraintSatisfaction dataType="String">repair</constraintSatisfaction>
+  <penaltyCoefficient dataType="Double">0.33</penaltyCoefficient>
 
   <survivalStrategy dataType="String">Plus</survivalStrategy>
 

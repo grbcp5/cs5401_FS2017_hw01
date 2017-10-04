@@ -33,6 +33,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   private double currentBestFitness;
   private double fitnessSum;
   private double averageFitness;
+  private int lastGenerationWithAverageChange;
   private BinPackingSolution[] population;
 
   private int currentDenom;
@@ -78,6 +79,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.numGenerations = 0;
     this.numNewIndividuals = 0;
     this.averageFitness = 0;
+    this.lastGenerationWithAverageChange = 0;
     this.fitnessSum = 0;
 
     this.currentDenom = 3;
@@ -160,13 +162,18 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
     int run;
+    double avgFit;
 
     run = ( int ) ( parameters.get( "currentRun" ) );
     this.numNewIndividuals++;
 
     // Update average
     this.fitnessSum += this.fitness( sol );
-    this.averageFitness = this.fitnessSum / this.numNewIndividuals;
+    avgFit = this.fitnessSum / this.numNewIndividuals;
+    if( avgFit > this.averageFitness ) {
+      this.lastGenerationWithAverageChange = this.numGenerations;
+    }
+    this.averageFitness = avgFit;
 
     // Print to keep application responsive
     if ( this.numNewIndividuals % 100 == 0 ) {
@@ -185,7 +192,16 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     }
 
     // Check if premature convergance
+    // No change in best
     if ( ( this.numGenerations - this.currentBestGeneration ) >=
+      this.prematureConverganceThreshold ) {
+
+      this.converged = true;
+      return false;
+
+    }
+    // No change in average
+    if( ( this.numGenerations - this.lastGenerationWithAverageChange ) >=
       this.prematureConverganceThreshold ) {
 
       this.converged = true;

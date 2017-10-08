@@ -18,8 +18,8 @@ penalty50:
 penalty100:
 	./run.sh config/penalty100.xml config/100Shapes.txt
 
-penalyt100Complex:
-	./run.sh config/penalyt100Complex.xml config/100ShapesComplex.txt
+penalty100Complex:
+	./run.sh config/penalty100Complex.xml config/100ShapesComplex.txt
 
 selfAdaptive50:
 	./run.sh config/selfAdaptive50.xml config/50Shapes.txt

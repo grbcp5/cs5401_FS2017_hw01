@@ -34,5 +34,7 @@
 
   <survivalStrategy dataType="String">Comma</survivalStrategy>
 
+  <selfAdaptiveMutationRate dataType="Boolean">true</selfAdaptiveMutationRate>
+
 
 </config>

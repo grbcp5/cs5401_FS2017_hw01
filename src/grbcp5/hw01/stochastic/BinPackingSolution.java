@@ -14,8 +14,17 @@ public final class BinPackingSolution extends Individual {
                              int sheetHeight,
                              int sheetWidth,
                              Shape resultingSheet ) {
+    this( genesToCopy, shapesToCopy, sheetHeight, sheetWidth, resultingSheet,
+          null );
+  }
 
-    super( genesToCopy );
+  public BinPackingSolution( BinPackingGene[] genesToCopy,
+                             Shape[] shapesToCopy,
+                             int sheetHeight,
+                             int sheetWidth,
+                             Shape resultingSheet,
+                             MutationRateGene mgr ) {
+    super( genesToCopy, mgr );
 
     this.shapes = new Shape[ shapesToCopy.length ];
     for ( int i = 0; i < this.shapes.length; i++ ) {
@@ -55,14 +64,8 @@ public final class BinPackingSolution extends Individual {
 
   @Override
   public boolean setGene( int loci, Gene gene ) {
-    boolean superResult = super.setGene( loci, gene );
 
-    if( !superResult ) {
-      return false;
-    }
-
-
-    return true;
+    return super.setGene( loci, gene );
 
   }
 
@@ -75,7 +78,8 @@ public final class BinPackingSolution extends Individual {
       if( gene == null ) {
         sb.append( "null\n" );
       } else {
-        sb.append( gene.toString() + "\n" );
+        sb.append( gene.toString() );
+        sb.append( "\n" );
       }
     }
 

@@ -3,10 +3,11 @@ package grbcp5.hw01.stochastic;
 public abstract class Individual {
 
   protected Gene[] genes;
+  protected MutationRateGene mutationRateGene;
 
   protected Double penaltyValue;
 
-  public Individual( Gene[] copyGenes ) {
+  public Individual( Gene[] copyGenes, MutationRateGene mrg ) {
 
     this.genes = new Gene[ copyGenes.length ];
 
@@ -16,6 +17,13 @@ public abstract class Individual {
     }
 
     this.penaltyValue = null;
+    this.mutationRateGene = mrg;
+
+  }
+
+  public Individual( Gene[] copyGenes, double mutRate ) {
+
+    this( copyGenes, new MutationRateGene( mutRate ) );
 
   }
 
@@ -40,6 +48,23 @@ public abstract class Individual {
 
     this.genes[ loci ] = gene;
     return true;
+  }
+
+  public MutationRateGene getMutationRateGene() {
+    return mutationRateGene;
+  }
+
+  public void setMutationRateGene(
+    MutationRateGene mutationRateGene ) {
+    this.mutationRateGene = mutationRateGene;
+  }
+
+  public double getMutationRate() {
+    return mutationRateGene.getMutationRate();
+  }
+
+  public void setMutationRate( double mutationRate ) {
+    mutationRateGene.setMutationRate( mutationRate );
   }
 
   public Double getPenaltyValue() {

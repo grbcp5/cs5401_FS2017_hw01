@@ -2,9 +2,9 @@ package grbcp5.hw01.stochastic;
 
 public class MutationRateGene extends Gene {
 
-  private double mutationRate;
+  private Double mutationRate;
 
-  public MutationRateGene( double mutationRate ) {
+  public MutationRateGene( Double mutationRate ) {
     super();
 
     this.mutationRate = mutationRate;

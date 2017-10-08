@@ -15,7 +15,7 @@ public final class BinPackingSolution extends Individual {
                              int sheetWidth,
                              Shape resultingSheet ) {
     this( genesToCopy, shapesToCopy, sheetHeight, sheetWidth, resultingSheet,
-          null );
+          new MutationRateGene( null ) );
   }
 
   public BinPackingSolution( BinPackingGene[] genesToCopy,

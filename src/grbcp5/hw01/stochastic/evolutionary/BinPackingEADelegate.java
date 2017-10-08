@@ -48,6 +48,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private int invalidIndividuals;
 
+  private double selfAdaptiveMutationRate;
+
   /* Constructor */
   public BinPackingEADelegate(
     Map< String, Object > parameters,
@@ -97,33 +99,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     this.invalidIndividuals = 0;
 
-  }
+    this.selfAdaptiveMutationRate =
+      ( double ) ( this.parameters.get( "mutationRate" ) );
 
-
-  @Override
-  public void signalEndOfGeneration() {
-    int run;
-
-    run = ( int ) ( parameters.get( "currentRun" ) );
-
-    System.out.println( "Run " + run + ": End of generation: " + this
-      .numGenerations );
-
-    this.logWriter.println(
-      this.numNewIndividuals + "\t" +
-        this.averageFitness + "\t" +
-        this.currentBestFitness
-    );
-
-    this.numGenerations++;
-
-    System.out.println( "Generation: " + this.numGenerations + " had " + this
-      .invalidIndividuals +
-    " (" + ( this.invalidIndividuals / ( float ) this.populationSize) + ") " +
-      "invalid " +
-                          "individuals." );
-
-    this.invalidIndividuals = 0;
   }
 
   @Override
@@ -134,9 +112,6 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     if ( this.converged ) {
       run = ( int ) ( parameters.get( "currentRun" ) );
-      if ( run == null ) {
-        run = 0;
-      }
       System.out.println( "Terminating run " + run + " due to premature " +
                             "convergence." );
       return false;
@@ -146,9 +121,6 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       ( ( int ) ( parameters.get( "fitnessEvals" ) ) )
       ) {
       run = ( int ) ( parameters.get( "currentRun" ) );
-      if ( run == null ) {
-        run = 0;
-      }
       System.out.println( "Terminating run " + run + " due to fitness eval " +
                             "exhaustion." );
       return false;
@@ -170,7 +142,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     // Update average
     this.fitnessSum += this.fitness( sol );
     avgFit = this.fitnessSum / this.numNewIndividuals;
-    if( avgFit > this.averageFitness ) {
+    if ( avgFit > this.averageFitness ) {
       this.lastGenerationWithAverageChange = this.numGenerations;
     }
     this.averageFitness = avgFit;
@@ -201,7 +173,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
     // No change in average
-    if( ( this.numGenerations - this.lastGenerationWithAverageChange ) >=
+    if ( ( this.numGenerations - this.lastGenerationWithAverageChange ) >=
       this.prematureConverganceThreshold ) {
 
       this.converged = true;
@@ -209,7 +181,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
 
-    if( sol.getPenaltyValue() != null ) {
+    if ( sol.getPenaltyValue() != null ) {
       this.invalidIndividuals++;
     }
 
@@ -219,7 +191,55 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   @Override
   public void handlePopulation( Individual[] pop ) {
     this.population = new BinPackingSolution[ pop.length ];
+    
+    // Local variables
+    double sum;
+    int run;
 
+    // Initialize
+    sum = 0.0;
+    run = ( int ) ( parameters.get( "currentRun" ) );
+
+    // Update self adaptive genes
+    if( this.isMutationRateSelfAdaptive() ) {
+
+      for ( Individual i :
+        pop ) {
+        sum += i.getMutationRate();
+      }
+
+      this.selfAdaptiveMutationRate = sum / pop.length;
+
+    }
+
+    // Log end of generation
+    System.out.println( "Run " + run + ": End of generation: " + this
+      .numGenerations );
+
+    // Print to the log writer
+    this.logWriter.println(
+      this.numNewIndividuals + "\t" +
+        this.averageFitness + "\t" +
+        this.currentBestFitness
+    );
+
+    // Increate number of generations
+    this.numGenerations++;
+
+    // Reset penalty function specific information
+    if( this.getConstraintSatisfactionType().toLowerCase().equals( "penalty"
+    ) ) {
+      System.out.println( "Generation: " + this.numGenerations + " had " + this
+        .invalidIndividuals +
+                            " (" + ( this.invalidIndividuals /
+        ( float ) this.populationSize ) + ") " +
+                            "invalid " +
+                            "individuals." );
+
+      this.invalidIndividuals = 0;
+    }
+
+    // Handle for premature convergance
     if ( this.converged && Main.debug() ) {
       System.out.println( "Population: " );
       for ( int i = 0; i < pop.length; i++ ) {
@@ -237,7 +257,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private void updateBound( BinPackingSolution sol ) {
 
-    if( sol.getPenaltyValue() != null ) {
+    if ( sol.getPenaltyValue() != null ) {
       return;
     }
 
@@ -273,17 +293,15 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
         ) );
 
         // Fix it if it is valid
-        if( this.getConstraintSatisfactionType().toLowerCase().equals(
+        if ( !this.getConstraintSatisfactionType().toLowerCase().equals(
           "penalty" ) ) {
-
-        } else {
-          result = ( BinPackingSolution ) repair( result, loci, loci );
-        }
+            result = ( BinPackingSolution ) repair( result, loci, loci );
+          }
       }
 
     }
 
-    if( this.getConstraintSatisfactionType().toLowerCase().equals(
+    if ( this.getConstraintSatisfactionType().toLowerCase().equals(
       "penalty" ) ) {
       this.handlePotentiallyInvalidIndividual( result );
     }
@@ -315,7 +333,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public double getMutationRate() {
-    return ( ( double ) ( this.parameters.get( "mutationRate" ) ) );
+    if( this.isMutationRateSelfAdaptive() ) {
+      return this.selfAdaptiveMutationRate;
+    } else {
+      return ( ( double ) ( this.parameters.get( "mutationRate" ) ) );
+    }
   }
 
   @Override
@@ -334,10 +356,25 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   @Override
   public Individual[] getInitialPopulation() {
 
+    Individual[] population;
+
     // Randomly generate initial population
     this.randomSearch.search();
 
-    return this.randomSearchDelegate.getPopulation();
+    population = this.randomSearchDelegate.getPopulation();
+
+    if( this.isMutationRateSelfAdaptive() ) {
+
+      for ( Individual i :
+        population ) {
+        i.setMutationRate(
+          ( Double ) parameters.get( "mutationRate" )
+        );
+      }
+
+    }
+
+    return population;
   }
 
   @Override
@@ -453,7 +490,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     check = BinPackingSolutionChecker.checkSolution( sol, 0, sol.getShapes()
       .length - 1 );
 
-    if( check != null ) {
+    if ( check != null ) {
       sol.setPenaltyValue( null );
       sol.setSheet( check.getResultingSheet() );
       return;
@@ -468,6 +505,14 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   public String getSurvivalStrategyType() {
     return ( String ) parameters.get( "survivalStrategy" );
   }
+
+
+  @Override
+  public boolean isMutationRateSelfAdaptive() {
+    Boolean result = ( Boolean ) parameters.get( "selfAdaptiveMutationRate" );
+
+    return ( result != null && result );
+  }
 } /* Bin packing EA delegate */
 
 
@@ -477,7 +522,6 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   Random search for EA delegate
 
  */
-
 
 
 class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
@@ -594,11 +638,6 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
 
   /* Private helper for getRandomGene */
   private static int randInt( Random rnd, int min, int max ) {
-
-    if ( !( ( max - min ) + 1 > 0 ) ) {
-      max = max;
-    }
-
     return rnd.nextInt( ( max - min ) + 1 ) + min;
   }
 

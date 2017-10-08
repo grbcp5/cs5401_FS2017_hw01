@@ -241,12 +241,32 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     // Handle for premature convergance
     if ( this.converged && Main.debug() ) {
+
       System.out.println( "Population: " );
       for ( int i = 0; i < pop.length; i++ ) {
         this.population[ i ] = ( BinPackingSolution ) ( pop[ i ] );
 
         System.out.println( "\t" + this.fitness( this.population[ i ] ) );
       }
+
+      int remainingGenerations;
+
+      remainingGenerations =
+        ( ( ( int ) ( parameters.get( "fitnessEvals" ) ) ) - this
+          .numNewIndividuals ) / this.populationSize;
+
+      // Fill out the rest of the log
+      for ( int i = 1; i <= remainingGenerations; i++ ) {
+
+        // Print to the log writer
+        this.logWriter.println(
+          this.numNewIndividuals + ( i * this.populationSize ) + "\t" +
+            this.averageFitness + "\t" +
+            this.currentBestFitness
+        );
+
+      }
+
     }
 
   }

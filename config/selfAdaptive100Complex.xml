@@ -31,7 +31,7 @@
   <constraintSatisfaction dataType="String">repair</constraintSatisfaction>
   <penaltyCoefficient dataType="Double">0.33</penaltyCoefficient>
 
-  <survivalStrategy dataType="String">Comma</survivalStrategy>
+  <survivalStrategy dataType="String">Plus</survivalStrategy>
 
   <selfAdaptiveMutationRate dataType="Boolean">true</selfAdaptiveMutationRate>
 

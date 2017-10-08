@@ -22,8 +22,6 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract int getSurvivalTournamentSize();
 
-  public abstract void signalEndOfGeneration();
-
   public abstract double getMutationRate();
 
   public abstract int getNumParentsPerChild();
@@ -49,5 +47,7 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
   public abstract void handlePotentiallyInvalidIndividual( Individual i );
 
   public abstract String getSurvivalStrategyType();
+
+  public abstract boolean isMutationRateSelfAdaptive();
 
 }

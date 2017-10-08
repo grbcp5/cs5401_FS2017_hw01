@@ -32,7 +32,7 @@ public class EvolutionarySearch extends StochasticSearch {
       delegate.handleNewIndividual( i );
     }
 
-    delegate.signalEndOfGeneration();
+    delegate.handlePopulation( population );
 
     // Evolve initial population
     while ( delegate.shouldContinue() ) {
@@ -42,6 +42,7 @@ public class EvolutionarySearch extends StochasticSearch {
 
         children = createChildren( population, delegate.getNumChildren() );
 
+      // Handle if exhausted fintness evals in the middle of the generation
       } catch ( DelegateTriggeredStopRequest e ) {
 
         incompleteGeneration = e.getIndividuals();
@@ -59,10 +60,9 @@ public class EvolutionarySearch extends StochasticSearch {
       /* Find survivors */
       population = getSurvivors( population, children );
 
-      delegate.signalEndOfGeneration();
+      /* Give new population to delegate */
+      delegate.handlePopulation( population );
     }
-
-    delegate.handlePopulation( population );
 
     return delegate.getBestIndividual();
   }

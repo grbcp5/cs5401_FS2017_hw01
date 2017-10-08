@@ -4,8 +4,8 @@
   <seedSpecified dataType="Boolean" >false</seedSpecified>
   <fitnessEvals dataType="Integer" >10000</fitnessEvals>
   <runs dataType="Integer" >30</runs>
-  <logFilePath dataType="String" >./log/100Shapes/100ShapesLog.txt</logFilePath>
-  <solFilePath dataType="String" >./sol/100Shapes/100ShapesSol.txt</solFilePath>
+  <logFilePath dataType="String" >./log/100ShapesComplex/1b/100ShapesComplexLog.txt</logFilePath>
+  <solFilePath dataType="String" >./sol/100ShapesComplex/1b/100ComplexShapesSol.txt</solFilePath>
 
   <showShapes dataType="Boolean">true</showShapes>
   <showConfig dataType="Boolean">true</showConfig>

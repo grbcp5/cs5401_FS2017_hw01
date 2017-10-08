@@ -180,9 +180,9 @@ public class EvolutionarySearch extends StochasticSearch {
     rnd = GRandom.getInstance();
 
     if( replace ) {
-      pop = new ArrayList< Individual >( Arrays.asList( population ) );
+      pop = new ArrayList<>( Arrays.asList( population ) );
     } else {
-      pop = new LinkedList< Individual >( Arrays.asList( population ) );
+      pop = new LinkedList<>( Arrays.asList( population ) );
     }
 
     /* For each number to select */
@@ -225,10 +225,6 @@ public class EvolutionarySearch extends StochasticSearch {
 
     /* Create each child */
     for ( int c = 0; c < numChildren; c++ ) {
-
-      if( c == 19 ) {
-        c = 19;
-      }
 
       children[ c ] = this.createChild(
         selectParents(

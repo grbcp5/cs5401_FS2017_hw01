@@ -219,6 +219,9 @@ public class EvolutionarySearch extends StochasticSearch {
 
     /* Local variables */
     Individual[] children;
+    Individual[] parents;
+    double sum;
+    double avgMutationRate;
 
     /* Initialize */
     children = new Individual[ numChildren ];
@@ -226,14 +229,21 @@ public class EvolutionarySearch extends StochasticSearch {
     /* Create each child */
     for ( int c = 0; c < numChildren; c++ ) {
 
-      children[ c ] = this.createChild(
-        selectParents(
-          pop,
-          delegate.getNumParentsPerChild()
-        )
+      parents = selectParents(
+        pop,
+        delegate.getNumParentsPerChild()
       );
+      children[ c ] = this.createChild( parents );
       assert children[ c ] != null;
       children[ c ] = delegate.mutate( children[ c ] );
+
+      sum = 0.0;
+      for ( Individual parent :
+        parents ) {
+        sum += parent.getMutationRate();
+      }
+      avgMutationRate = sum / parents.length;
+      children[ c ].setMutationRate( avgMutationRate );
 
       // If delegate indicates to stop
       if ( !delegate.handleNewIndividual( children[ c ] ) ) {
@@ -257,6 +267,7 @@ public class EvolutionarySearch extends StochasticSearch {
         n = delegate.getNumCrossoverPoints();
         child = MultiaryOperator.nPointCrossOver( n, parents, delegate );
         assert child != null;
+
     }
 
 

@@ -377,6 +377,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   public Individual[] getInitialPopulation() {
 
     Individual[] population;
+    Random rnd;
+
+    rnd = GRandom.getInstance();
 
     // Randomly generate initial population
     this.randomSearch.search();
@@ -388,7 +391,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       for ( Individual i :
         population ) {
         i.setMutationRate(
-          ( Double ) parameters.get( "mutationRate" )
+          ( Double ) parameters.get( "mutationRate" ) +
+            rnd.nextGaussian() * 0.1
         );
       }
 

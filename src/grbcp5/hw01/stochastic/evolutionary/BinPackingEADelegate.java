@@ -3,15 +3,20 @@ package grbcp5.hw01.stochastic.evolutionary;
 import grbcp5.hw01.GRandom;
 import grbcp5.hw01.Main;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
+import grbcp5.hw01.shape.FallOffExcpetion;
+import grbcp5.hw01.shape.OverlapException;
 import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.*;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
 import grbcp5.hw01.stochastic.random.RandomSearch;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 
 public class BinPackingEADelegate extends EvolutionaryDelegate {
 
@@ -373,11 +378,81 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     return ( ( int ) ( parameters.get( "numCrossoverPoints" ) ) );
   }
 
+  private BinPackingSolution createIndividualFromSolutionDefinition(
+    String fileContainingDefinition
+  ) {
+    BinPackingSolution result;
+    String line;
+    String[] lineParts;
+    int x, y, rot;
+    File definitionFile;
+    Scanner definitionScanner;
+    BinPackingGene[] genes;
+    Shape sheet;
+
+    definitionFile = new File( fileContainingDefinition );
+
+    try {
+      definitionScanner = new Scanner( definitionFile );
+    } catch ( FileNotFoundException e ) {
+      e.printStackTrace();
+      definitionScanner = null;
+    }
+
+    /* Parse all genes */
+    sheet = new Shape( problemDefinition.getSheetHeight(), problemDefinition
+      .getSheetWidth() );
+    genes = new BinPackingGene[ problemDefinition.getNumShapes() ];
+    for( int i = 0; i < problemDefinition.getNumShapes(); i++ ) {
+
+      line = definitionScanner.nextLine();
+      lineParts = line.split( ", " );
+
+      x = Integer.parseInt( lineParts[ 0 ] );
+      y = Integer.parseInt( lineParts[ 1 ] );
+      rot = Integer.parseInt( lineParts[ 2 ] );
+
+      genes[ i ] = new BinPackingGene(
+        x,
+        y,
+        rot
+      );
+
+//      try {
+
+        if( i == 15 ) {
+          i = i;
+        }
+
+        sheet = sheet.eatWithoutConcern( problemDefinition.getShapes()[ i ].rotate(
+          rot ), y, x );
+//      } catch ( OverlapException | FallOffExcpetion e ) {
+//        e.printStackTrace();
+//        return null;
+//      }
+
+    }
+
+    result = new BinPackingSolution(
+      genes,
+      problemDefinition.getShapes(),
+      problemDefinition.getSheetHeight(),
+      problemDefinition.getSheetWidth(),
+      new Shape( problemDefinition.getSheetHeight(), problemDefinition
+        .getSheetWidth() )
+    );
+
+    return result;
+  }
+
   @Override
   public Individual[] getInitialPopulation() {
 
     Individual[] population;
     Random rnd;
+    Object parameterValue;
+    boolean isInitialPopSeeded;
+    String[] valuesToInclude;
 
     rnd = GRandom.getInstance();
 
@@ -385,6 +460,27 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.randomSearch.search();
 
     population = this.randomSearchDelegate.getPopulation();
+
+    parameterValue = parameters.get( "includeInitialPopulationSeedValues" );
+    if( parameterValue != null ) {
+      isInitialPopSeeded = ( boolean )parameterValue;
+
+      if( isInitialPopSeeded ) {
+
+        valuesToInclude =
+          ( String[] )parameters.get( "includeInInitialPopulation" );
+
+        for( int i = 0; i < valuesToInclude.length && i < population.length; i++ ) {
+
+          population[ i ] = createIndividualFromSolutionDefinition(
+            valuesToInclude[ i ]
+          );
+
+        }
+
+      }
+
+    }
 
     if( this.isMutationRateSelfAdaptive() ) {
 

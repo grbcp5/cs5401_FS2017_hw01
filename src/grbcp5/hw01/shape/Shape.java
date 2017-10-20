@@ -287,6 +287,10 @@ public class Shape {
 
         if ( innerShape.matrix[ r ][ c ] ) {
 
+          if( r + row >= 20 ) {
+            r = r;
+          }
+
           newShapeDefiniton[ row + r ][ col + c ] = true;
 
         } /* If inner shape populates this square */

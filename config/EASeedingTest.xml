@@ -13,7 +13,7 @@
   <debug dataType="Boolean">true</debug>
 
   <!-- Evolutionary Parameters-->
-  <populationSize dataType="Integer">200</populationSize>
+  <populationSize dataType="Integer">10</populationSize>
   <numChildren dataType="Integer">100</numChildren>
   <mutationRate dataType="Double">0.75</mutationRate>
   <convergenceCriterion dataType="Integer">15</convergenceCriterion>

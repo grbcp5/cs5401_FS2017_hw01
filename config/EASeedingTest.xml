@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<config>
+  <searchType dataType="String" >EvolutionarySearch</searchType>
+  <seedSpecified dataType="Boolean" >true</seedSpecified>
+  <seed dataType="Long" >10021996</seed>
+  <fitnessEvals dataType="Integer" >5000</fitnessEvals>
+  <runs dataType="Integer" >5</runs>
+  <logFilePath dataType="String" >./log/quickRunLog</logFilePath>
+  <solFilePath dataType="String" >./sol/quickRunSol</solFilePath>
+
+  <showShapes dataType="Boolean">true</showShapes>
+  <showConfig dataType="Boolean">true</showConfig>
+  <debug dataType="Boolean">true</debug>
+
+  <!-- Evolutionary Parameters-->
+  <populationSize dataType="Integer">200</populationSize>
+  <numChildren dataType="Integer">100</numChildren>
+  <mutationRate dataType="Double">0.75</mutationRate>
+  <convergenceCriterion dataType="Integer">15</convergenceCriterion>
+
+  <parentSelectionMethod dataType="String">kTournament</parentSelectionMethod>
+  <parentSelectionTournamentSize dataType="Integer">4</parentSelectionTournamentSize>
+  <parentsPerChild dataType="Integer">5</parentsPerChild>
+
+  <survivorSelectionMethod dataType="String">kTournament</survivorSelectionMethod>
+  <survivorSelectionTournamentSize dataType="Integer">4</survivorSelectionTournamentSize>
+  <multiaryOperator dataType="String">nPointCrossover</multiaryOperator>
+  <numCrossoverPoints dataType="Integer">4</numCrossoverPoints>
+
+
+  <!-- Assignment 1C Configurations -->
+  <constraintSatisfaction dataType="String">repair</constraintSatisfaction>
+  <penaltyCoefficient dataType="Double">0.33</penaltyCoefficient>
+
+  <survivalStrategy dataType="String">Plus</survivalStrategy>
+
+  <selfAdaptiveMutationRate dataType="Boolean">false</selfAdaptiveMutationRate>
+
+  <!-- Assignment 1D Configurations -->
+  <includeInitialPopulationSeedValues dataType="Boolean">true</includeInitialPopulationSeedValues>
+  <includeInInitialPopulation dataType="List">
+    <shape1>initialPopulationValues/50Shape1</shape1>
+  </includeInInitialPopulation>
+
+
+</config>

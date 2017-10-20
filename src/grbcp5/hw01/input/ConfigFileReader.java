@@ -12,6 +12,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class ConfigFileReader {
@@ -50,6 +52,20 @@ public class ConfigFileReader {
 
   }
 
+  private String[] convertToArray( NodeList list ) {
+
+    List<String> result = new LinkedList<String>();
+    String trimmedString;
+
+    for( int i = 0; i < list.getLength(); i++ ) {
+      trimmedString = list.item( i ).getTextContent().trim();
+      if( trimmedString.length() > 0 )
+      result.add( 0, trimmedString );
+    }
+
+    return result.toArray( new String[ result.size() ] );
+  }
+
   public Map< String, Object > getParameters() {
     Map< String, Object > parameterMap
       = new HashMap< String, Object >( this.numChildNodes );
@@ -79,6 +95,9 @@ public class ConfigFileReader {
           case "Boolean":
             value = Boolean.parseBoolean( nodeText );
             break;
+          case "List":
+            value = this.convertToArray( element.getChildNodes() );
+            break;
           default:
             // Assume string
             value = nodeText;
@@ -86,6 +105,7 @@ public class ConfigFileReader {
         }
 
         parameterMap.put( element.getTagName(), value );
+
       }
 
     }

@@ -237,13 +237,15 @@ public class EvolutionarySearch extends StochasticSearch {
       assert children[ c ] != null;
       children[ c ] = delegate.mutate( children[ c ] );
 
-      sum = 0.0;
-      for ( Individual parent :
-        parents ) {
-        sum += parent.getMutationRate();
-      }
-      avgMutationRate = sum / parents.length;
-      children[ c ].setMutationRate( avgMutationRate );
+      if ( delegate.isMutationRateSelfAdaptive() ) {
+        sum = 0.0;
+        for ( Individual parent :
+          parents ) {
+          sum += parent.getMutationRate();
+        }
+        avgMutationRate = sum / parents.length;
+        children[ c ].setMutationRate( avgMutationRate );
+    }
 
       // If delegate indicates to stop
       if ( !delegate.handleNewIndividual( children[ c ] ) ) {

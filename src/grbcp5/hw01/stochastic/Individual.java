@@ -59,7 +59,7 @@ public abstract class Individual {
     this.mutationRateGene = mutationRateGene;
   }
 
-  public double getMutationRate() {
+  public Double getMutationRate() {
     return mutationRateGene.getMutationRate();
   }
 

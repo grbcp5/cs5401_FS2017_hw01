@@ -10,7 +10,7 @@ public class MutationRateGene extends Gene {
     this.mutationRate = mutationRate;
   }
 
-  public double getMutationRate() {
+  public Double getMutationRate() {
     return mutationRate;
   }
 

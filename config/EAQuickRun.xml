@@ -13,10 +13,10 @@
   <debug dataType="Boolean">true</debug>
 
   <!-- Evolutionary Parameters-->
-  <populationSize dataType="Integer">10</populationSize>
-  <numChildren dataType="Integer">5</numChildren>
+  <populationSize dataType="Integer">100</populationSize>
+  <numChildren dataType="Integer">50</numChildren>
   <mutationRate dataType="Double">0.75</mutationRate>
-  <convergenceCriterion dataType="Integer">15</convergenceCriterion>
+  <convergenceCriterion dataType="Integer">5</convergenceCriterion>
 
   <parentSelectionMethod dataType="String">kTournament</parentSelectionMethod>
   <parentSelectionTournamentSize dataType="Integer">4</parentSelectionTournamentSize>

@@ -16,6 +16,9 @@ public abstract class StochasticDelegate implements Comparator< Individual> {
 
   public abstract Individual getBestIndividual();
 
+  /* Assignment 1D additions */
+  public abstract Individual[] getIndividualsOnBestFront();
+
   @Override
   public abstract int compare( Individual i1, Individual i2 );
 

@@ -51,6 +51,7 @@ public class Main {
     double currentBestFitness = -1;
     PrintWriter logWriter;
     PrintWriter solWriter;
+    Individual[] bestFront;
 
     try {
 
@@ -165,18 +166,28 @@ public class Main {
         return;
       }
 
-      runBest = searcher.search();
-      runBestFitness = delegate.fitness( runBest );
+      searcher.search();
+      bestFront = delegate.getIndividualsOnBestFront();
 
-      if ( runBestFitness > currentBestFitness ) {
-        currentBestFitness = runBestFitness;
-        currentBest = runBest;
+      System.out.println( "Best front had " + bestFront.length + " " +
+                            "individuals " );
+      for ( Individual i :
+        bestFront ) {
+        BinPackingSolution sol = ( BinPackingSolution ) ( i );
 
-        System.out.println( "Run produced a better individual. + (" +
-        currentBestFitness + ").");
-        System.out.println( ( (BinPackingSolution)currentBest)
-                              .getResultingSheet() );
+        System.out.println( "Solution " );
+        System.out.println( sol.getResultingSheet() );
       }
+
+//      if ( runBestFitness > currentBestFitness ) {
+//        currentBestFitness = runBestFitness;
+//        currentBest = runBest;
+//
+//        System.out.println( "Run produced a better individual. + (" +
+//        currentBestFitness + ").");
+//        System.out.println( ( (BinPackingSolution)currentBest)
+//                              .getResultingSheet() );
+//      }
       printDashedln();
 
     }
@@ -184,17 +195,17 @@ public class Main {
     endTime = System.currentTimeMillis();
     elapsedTime = endTime - startTime;
     System.out.println( "Total time: " + elapsedTime );
-    System.out.println( "Best individual (" + currentBestFitness + "): " );
-    System.out.println(
-      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
-    );
-    solWriter.println( currentBest.toString() );
-    logWriter.println( "\n\nBest solution found had fitness: " +
-                         currentBestFitness );
-    logWriter.println( "\nBestSolution:" );
-    logWriter.println(
-      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
-    );
+//    System.out.println( "Best individual (" + currentBestFitness + "): " );
+//    System.out.println(
+//      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
+//    );
+//    solWriter.println( currentBest.toString() );
+//    logWriter.println( "\n\nBest solution found had fitness: " +
+//                         currentBestFitness );
+//    logWriter.println( "\nBestSolution:" );
+//    logWriter.println(
+//      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
+//    );
 
     logWriter.close();
     solWriter.close();

@@ -211,4 +211,8 @@ public class BinPackingRandomSearchDelegate extends RandomSearchDelegate {
     return fitness1.compareTo( fitness2 );
   }
 
+  @Override
+  public Individual[] getIndividualsOnBestFront() {
+    return null;
+  }
 }

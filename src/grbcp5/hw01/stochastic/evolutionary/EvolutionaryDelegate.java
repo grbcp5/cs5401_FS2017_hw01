@@ -34,7 +34,7 @@ public abstract class EvolutionaryDelegate extends StochasticDelegate {
 
   public abstract Gene getBestGene( Gene g1, Gene g2 );
 
-  public abstract void handlePopulation( Individual[] population );
+  public abstract boolean handlePopulation( Individual[] population );
 
   public abstract int getParentSelectionTournamentSize();
 

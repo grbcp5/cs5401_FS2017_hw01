@@ -112,7 +112,6 @@ public class MultiaryOperator {
 
       }
     }
-
     if( delegate.getConstraintSatisfactionType().toLowerCase()
                 .equals( "penalty" ) ) {
       delegate.handlePotentiallyInvalidIndividual( resultingIndividual );

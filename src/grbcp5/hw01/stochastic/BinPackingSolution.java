@@ -9,6 +9,8 @@ public final class BinPackingSolution extends Individual {
   private int sheetHeight;
   private Shape resultingSheet;
 
+  private int level;
+
   public BinPackingSolution( BinPackingGene[] genesToCopy,
                              Shape[] shapesToCopy,
                              int sheetHeight,
@@ -16,6 +18,8 @@ public final class BinPackingSolution extends Individual {
                              Shape resultingSheet ) {
     this( genesToCopy, shapesToCopy, sheetHeight, sheetWidth, resultingSheet,
           new MutationRateGene( null ) );
+
+    this.level = -1;
   }
 
   public BinPackingSolution( BinPackingGene[] genesToCopy,
@@ -35,6 +39,8 @@ public final class BinPackingSolution extends Individual {
     this.sheetWidth = sheetWidth;
 
     this.resultingSheet = resultingSheet.getCopy();
+
+    this.level = -1;
   }
 
   public Shape[] getShapes() {
@@ -61,6 +67,14 @@ public final class BinPackingSolution extends Individual {
     this.resultingSheet = sheet;
   }
 
+
+  public int getLevel() {
+    return level;
+  }
+
+  public void setLevel( int level ) {
+    this.level = level;
+  }
 
   @Override
   public boolean setGene( int loci, Gene gene ) {

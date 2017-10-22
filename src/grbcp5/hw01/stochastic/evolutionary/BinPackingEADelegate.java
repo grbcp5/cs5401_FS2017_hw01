@@ -3,8 +3,6 @@ package grbcp5.hw01.stochastic.evolutionary;
 import grbcp5.hw01.GRandom;
 import grbcp5.hw01.Main;
 import grbcp5.hw01.input.BinPackingProblemDefinition;
-import grbcp5.hw01.shape.FallOffExcpetion;
-import grbcp5.hw01.shape.OverlapException;
 import grbcp5.hw01.shape.Shape;
 import grbcp5.hw01.stochastic.*;
 import grbcp5.hw01.stochastic.random.BinPackingRandomSearchDelegate;
@@ -13,10 +11,7 @@ import grbcp5.hw01.stochastic.random.RandomSearch;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class BinPackingEADelegate extends EvolutionaryDelegate {
 
@@ -36,9 +31,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private BinPackingSolution currentBest;
   private double currentBestFitness;
-  private double fitnessSum;
-  private double averageFitness;
-  private int lastGenerationWithAverageChange;
+  private int getLastGenerationWithBestChange;
   private BinPackingSolution[] population;
 
   private int currentDenom;
@@ -54,6 +47,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   private int invalidIndividuals;
 
   private double selfAdaptiveMutationRate;
+
+  private LinkedList< LinkedList< BinPackingSolution > > levels;
 
   /* Constructor */
   public BinPackingEADelegate(
@@ -85,9 +80,6 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     // Instance variables */
     this.numGenerations = 0;
     this.numNewIndividuals = 0;
-    this.averageFitness = 0;
-    this.lastGenerationWithAverageChange = 0;
-    this.fitnessSum = 0;
 
     this.currentDenom = 3;
     this.bound = this.problemDefinition.getSheetWidth() / this.currentDenom;
@@ -135,8 +127,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
   }
 
   @Override
-  public boolean handleNewIndividual( Individual i ) {
-    BinPackingSolution sol = ( BinPackingSolution ) ( i );
+  public boolean handleNewIndividual( Individual ind ) {
+    BinPackingSolution sol = ( BinPackingSolution ) ( ind );
 
     int run;
     double avgFit;
@@ -144,59 +136,222 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     run = ( int ) ( parameters.get( "currentRun" ) );
     this.numNewIndividuals++;
 
-    // Update average
-    this.fitnessSum += this.fitness( sol );
-    avgFit = this.fitnessSum / this.numNewIndividuals;
-    if ( avgFit > this.averageFitness ) {
-      this.lastGenerationWithAverageChange = this.numGenerations;
-    }
-    this.averageFitness = avgFit;
+    //    // Update average
+    //    this.fitnessSum += this.fitness( sol );
+    //    avgFit = this.fitnessSum / this.numNewIndividuals;
+    //    if ( avgFit > this.averageFitness ) {
+    //      this.lastGenerationWithAverageChange = this.numGenerations;
+    //    }
+    //    this.averageFitness = avgFit;
+    //
+    //    // Print to keep application responsive
+    //    if ( this.numNewIndividuals % 100 == 0 ) {
+    //      System.out.println( "Run " + run + ": Used " + this.numNewIndividuals +
+    //                            " evaluations." );
+    //    }
 
-    // Print to keep application responsive
-    if ( this.numNewIndividuals % 100 == 0 ) {
-      System.out.println( "Run " + run + ": Used " + this.numNewIndividuals +
-                            " evaluations." );
-    }
+    //    // Update if new best
+    //    if ( this.fitness( sol ) > this.currentBestFitness ) {
+    //      this.currentBest = sol;
+    //      this.currentBestFitness = this.fitness( sol );
+    //      this.currentBestGeneration = this.numGenerations;
+    //
+    //      System.out.println( "New best of " + this.currentBestFitness );
+    //      updateBound( sol );
+    //    }
 
-    // Update if new best
-    if ( this.fitness( sol ) > this.currentBestFitness ) {
-      this.currentBest = sol;
-      this.currentBestFitness = this.fitness( sol );
-      this.currentBestGeneration = this.numGenerations;
+    //    // Check if premature convergance
+    //    // No change in best
+    //    if ( ( this.numGenerations - this.currentBestGeneration ) >=
+    //      this.prematureConverganceThreshold ) {
+    //
+    //      this.converged = true;
+    //      return false;
+    //
+    //    }
+    //    // No change in average
+    //    if ( ( this.numGenerations - this.lastGenerationWithAverageChange ) >=
+    //      this.prematureConverganceThreshold ) {
+    //
+    //      this.converged = true;
+    //      return false;
+    //
+    //    }
 
-      System.out.println( "New best of " + this.currentBestFitness );
-      updateBound( sol );
-    }
+    //    if ( sol.getPenaltyValue() != null ) {
+    //      this.invalidIndividuals++;
+    //    }
 
-    // Check if premature convergance
-    // No change in best
-    if ( ( this.numGenerations - this.currentBestGeneration ) >=
-      this.prematureConverganceThreshold ) {
-
-      this.converged = true;
-      return false;
-
-    }
-    // No change in average
-    if ( ( this.numGenerations - this.lastGenerationWithAverageChange ) >=
-      this.prematureConverganceThreshold ) {
-
-      this.converged = true;
-      return false;
-
-    }
-
-    if ( sol.getPenaltyValue() != null ) {
-      this.invalidIndividuals++;
-    }
+    addIndividualToLevel( sol );
 
     return this.shouldContinue();
   }
 
+  private boolean doesOneDominateTwo( BinPackingSolution one,
+                                      BinPackingSolution two ) {
+    if ( horizontalFitness( one ) > horizontalFitness( two ) ) {
+
+      if ( verticalFitenss( one ) >= verticalFitenss( two ) ) {
+        return true;
+      }
+
+    } else if ( horizontalFitness( one ) == horizontalFitness( two ) ) {
+
+      if ( verticalFitenss( one ) > verticalFitenss( two ) ) {
+        return true;
+      }
+
+    }
+
+    return false;
+
+  }
+
+  void addToLevel( int level, BinPackingSolution sol ) {
+    if ( level > this.levels.size() ) {
+      throw new IndexOutOfBoundsException( level + " out of bounds bro" );
+    }
+
+    this.levels.get( level ).add( sol );
+  }
+
+  private void addIndividualToLevel( BinPackingSolution sol ) {
+
+    boolean placed;
+    Queue< BinPackingSolution > cascadeDominance;
+    BinPackingSolution curSol;
+    BinPackingSolution dominatedIndividual;
+
+    placed = false;
+
+    /* Find this individuals level */
+    for ( int l = 0; !placed && l < this.levels.size(); l++ ) {
+
+      if ( !isDominatedByAnything( sol, this.levels.get( l ) ) ) {
+        sol.setLevel( l );
+        addToLevel( l, sol );
+        placed = true;
+      }
+
+    }
+
+    /* If new sol is dominated by something on every level */
+    if ( !placed ) {
+      /* Place it in a new level */
+      levels.add( levels.size(), new LinkedList<>() );
+      sol.setLevel( levels.size() - 1 );
+      addToLevel( levels.size() - 1, sol );
+    }
+
+    cascadeDominance = new LinkedList<>();
+    cascadeDominance.add( sol );
+
+    int itr = -1;
+
+    while ( !cascadeDominance.isEmpty() ) {
+      curSol = cascadeDominance.remove();
+
+      itr++;
+
+      /* Determine if it dominates anything on its level */
+      for ( int i = 0; i < this.levels.get( curSol.getLevel() ).size(); i++ ) {
+
+        dominatedIndividual = levels.get( curSol.getLevel() ).get( i );
+        if ( doesOneDominateTwo( curSol, dominatedIndividual ) ) {
+
+          /* Move their level */
+          this.levels.get( curSol.getLevel() ).remove( i );
+          dominatedIndividual.setLevel( dominatedIndividual.getLevel() + 1 );
+
+          /* Make sure to not try to add them off the end */
+          if ( dominatedIndividual.getLevel() == levels.size() ) {
+            levels.add( levels.size(), new LinkedList<>() );
+          }
+
+          /* Add them to the next level */
+          addToLevel( dominatedIndividual.getLevel(), dominatedIndividual );
+
+          /* Check if they dominate anyone that needs to be moved down */
+          cascadeDominance.add( dominatedIndividual );
+        }
+
+      }
+
+    }
+
+  }
+
+  private boolean isDominatedByAnything(
+    BinPackingSolution sol,
+    List< BinPackingSolution > anything ) {
+
+    /* Compare against everything in this list */
+    for ( BinPackingSolution individual : anything ) {
+
+      /* If something in the list dominates it */
+      if ( doesOneDominateTwo( individual, sol ) ) {
+        return true;
+      }
+
+    }
+
+    /* Nothing in the list dominates this solution */
+    return false;
+
+  }
+
+  private void constructLevels( Individual[] pop ) {
+
+    /* Local Variables */
+    BinPackingSolution sol;
+    List< BinPackingSolution > individualsLeft;
+    int curLevel;
+    BinPackingSolution curSol;
+    boolean isDominated;
+
+    /* Initialize */
+    individualsLeft = new LinkedList<>();
+    for ( Individual i : pop ) {
+      individualsLeft.add( ( BinPackingSolution ) i );
+    }
+
+    this.levels = new LinkedList< LinkedList< BinPackingSolution > >();
+    curLevel = -1;
+
+    /* Do until all individuals are placed */
+    while ( !individualsLeft.isEmpty() ) {
+
+      /* Create new level */
+      curLevel++;
+      this.levels.add( curLevel, new LinkedList<>() );
+
+      /* Find each individual on this level */
+      for ( int i = 0; i < individualsLeft.size(); i++ ) {
+        curSol = individualsLeft.get( i );
+
+        /* Detirmine if this individual is dominated by any other individual */
+        isDominated = isDominatedByAnything( curSol, individualsLeft );
+
+        /* If it is not */
+        if ( !isDominated ) {
+
+          curSol.setLevel( curLevel );
+          addToLevel( curLevel, curSol );
+          individualsLeft.remove( i );
+          i--;
+
+        }
+
+      } /* For each individual left */
+
+    } /* While individuals remain */
+
+  } /* constructLevels */
+
   @Override
-  public void handlePopulation( Individual[] pop ) {
+  public boolean handlePopulation( Individual[] pop ) {
     this.population = new BinPackingSolution[ pop.length ];
-    
+
     // Local variables
     double sum;
     int run;
@@ -205,8 +360,10 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     sum = 0.0;
     run = ( int ) ( parameters.get( "currentRun" ) );
 
+    constructLevels( pop );
+
     // Update self adaptive genes
-    if( this.isMutationRateSelfAdaptive() ) {
+    if ( this.isMutationRateSelfAdaptive() ) {
 
       for ( Individual i :
         pop ) {
@@ -221,10 +378,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     System.out.println( "Run " + run + ": End of generation: " + this
       .numGenerations );
 
+    // TODO: Log subfitenss best and average
+
     // Print to the log writer
     this.logWriter.println(
       this.numNewIndividuals + "\t" +
-        this.averageFitness + "\t" +
         this.currentBestFitness
     );
 
@@ -232,7 +390,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.numGenerations++;
 
     // Reset penalty function specific information
-    if( this.getConstraintSatisfactionType().toLowerCase().equals( "penalty"
+    if ( this.getConstraintSatisfactionType().toLowerCase().equals( "penalty"
     ) ) {
       System.out.println( "Generation: " + this.numGenerations + " had " + this
         .invalidIndividuals +
@@ -242,6 +400,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
                             "individuals." );
 
       this.invalidIndividuals = 0;
+    }
+
+    if ( this.numGenerations - this.getLastGenerationWithBestChange >
+      this.prematureConverganceThreshold ) {
+      this.converged = true;
     }
 
     // Handle for premature convergance
@@ -263,10 +426,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       // Fill out the rest of the log
       for ( int i = 1; i <= remainingGenerations; i++ ) {
 
+        // TODO: Fill out average
         // Print to the log writer
         this.logWriter.println(
           this.numNewIndividuals + ( i * this.populationSize ) + "\t" +
-            this.averageFitness + "\t" +
+            /*this.averageFitness + "\t" +*/
             this.currentBestFitness
         );
 
@@ -274,6 +438,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
 
+    return this.shouldContinue();
   }
 
   private int getBound() {
@@ -286,12 +451,78 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       return;
     }
 
-    if ( this.fitness( sol ) * sol.getSheetWidth() >
+    if ( this.horizontalFitness( sol ) * sol.getSheetWidth() >
       sol.getSheetWidth() - ( sol.getSheetWidth() / this.currentDenom ) ) {
       System.out.println( "Updating bound" );
       this.currentDenom++;
       this.bound = sol.getSheetWidth() / this.currentDenom;
     }
+
+  }
+
+  public void removeShapeFromSheet( BinPackingSolution sol, int shapeNum ) {
+    //
+    //    Shape sheet;
+    //    boolean[][] matrix;
+    //    BinPackingGene gene;
+    //    Shape shapeToRemove;
+    //    int row;
+    //    int col;
+    //    int rot;
+    //
+    //    sheet = sol.getResultingSheet();
+    //    matrix = sheet.getMatrix();
+    //    gene = ( BinPackingGene )sol.getGene( shapeNum );
+    //    row = gene.getY();
+    //    col = gene.getX();
+    //    rot = gene.getRotation();
+    //    shapeToRemove = sol.getShapes()[ shapeNum ].rotate( rot );
+    //
+    //    for( int r = 0; r < shapeToRemove.getNumRows(); r++ ) {
+    //      for( int c = 0; c < shapeToRemove.getNumCols(); c++ ) {
+    //        if( shapeToRemove.getMatrix()[ r ][ c ] ) {
+    //
+    //          if( row + r >= matrix.length || col + c >= matrix[ 0 ].length ) {
+    //            r = r;
+    //          }
+    //
+    //          matrix[ row + r ][ col + c ] = false;
+    //        }
+    //      }
+    //    }
+    //
+    //    sol.setSheet( new Shape( matrix, -1, -1  ) );
+    //
+
+
+    Shape sheet = sol.getResultingSheet();
+    Shape newSheet = new Shape(
+      new boolean[ sheet.getNumRows() ][ sheet.getNumCols() ],
+      -1,
+      -1
+    );
+    BinPackingGene gene;
+
+    for ( int i = 0; i < sol.getShapes().length; i++ ) {
+
+      if ( i != shapeNum ) {
+
+        gene = ( BinPackingGene ) sol.getGene( i );
+
+        newSheet = newSheet.eatWithoutConcern(
+          sol.getShapes()[ i ].rotate( gene.getRotation() ),
+          gene.getY() - sol.getShapes()[ i ].rotate( gene.getRotation() )
+                                            .getStartRow(),
+          gene.getX() - sol.getShapes()[ i ].rotate( gene.getRotation() )
+                                            .getStartCol()
+        );
+      }
+
+
+
+    }
+
+    sol.setSheet( newSheet );
 
   }
 
@@ -311,17 +542,20 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
       // See if this gene should be mutated
       if ( rnd.nextDouble() <= mutationRate ) {
 
-        // If so, mutate this gene
-        result.setGene( loci, randomSearchDelegate.getRandomGene(
-          loci,
-          this.getBound()
-        ) );
+        removeShapeFromSheet( result, loci );
 
-        // Fix it if it is valid
-        if ( !this.getConstraintSatisfactionType().toLowerCase().equals(
-          "penalty" ) ) {
-            result = ( BinPackingSolution ) repair( result, loci, loci );
-          }
+        // If so, mutate this gene
+        result.setGene(
+          loci,
+          randomSearchDelegate.getRandomGene(
+            loci,
+            ( ( BinPackingGene ) result.getGene( loci ) ).getY()
+            + result.getShapes()[ loci ].getLargestDimension(),
+            this.getBound()
+          )
+        );
+
+        result = ( BinPackingSolution ) repair( result, loci, loci );
       }
 
     }
@@ -332,6 +566,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     }
 
     return result;
+
   }
 
   @Override
@@ -358,7 +593,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public double getMutationRate() {
-    if( this.isMutationRateSelfAdaptive() ) {
+    if ( this.isMutationRateSelfAdaptive() ) {
       return this.selfAdaptiveMutationRate;
     } else {
       return ( ( double ) ( this.parameters.get( "mutationRate" ) ) );
@@ -403,7 +638,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     sheet = new Shape( problemDefinition.getSheetHeight(), problemDefinition
       .getSheetWidth() );
     genes = new BinPackingGene[ problemDefinition.getNumShapes() ];
-    for( int i = 0; i < problemDefinition.getNumShapes(); i++ ) {
+    for ( int i = 0; i < problemDefinition.getNumShapes(); i++ ) {
 
       line = definitionScanner.nextLine();
       lineParts = line.split( ", " );
@@ -418,18 +653,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
         rot
       );
 
-//      try {
-
-        if( i == 15 ) {
-          i = i;
-        }
-
-        sheet = sheet.eatWithoutConcern( problemDefinition.getShapes()[ i ].rotate(
+      sheet =
+        sheet.eatWithoutConcern( problemDefinition.getShapes()[ i ].rotate(
           rot ), y, x );
-//      } catch ( OverlapException | FallOffExcpetion e ) {
-//        e.printStackTrace();
-//        return null;
-//      }
 
     }
 
@@ -462,15 +688,16 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     population = this.randomSearchDelegate.getPopulation();
 
     parameterValue = parameters.get( "includeInitialPopulationSeedValues" );
-    if( parameterValue != null ) {
-      isInitialPopSeeded = ( boolean )parameterValue;
+    if ( parameterValue != null ) {
+      isInitialPopSeeded = ( boolean ) parameterValue;
 
-      if( isInitialPopSeeded ) {
+      if ( isInitialPopSeeded ) {
 
         valuesToInclude =
-          ( String[] )parameters.get( "includeInInitialPopulation" );
+          ( String[] ) parameters.get( "includeInInitialPopulation" );
 
-        for( int i = 0; i < valuesToInclude.length && i < population.length; i++ ) {
+        for ( int i = 0; i < valuesToInclude.length && i < population.length;
+              i++ ) {
 
           population[ i ] = createIndividualFromSolutionDefinition(
             valuesToInclude[ i ]
@@ -482,7 +709,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
 
-    if( this.isMutationRateSelfAdaptive() ) {
+    if ( this.isMutationRateSelfAdaptive() ) {
 
       for ( Individual i :
         population ) {
@@ -547,6 +774,13 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public double fitness( Individual i ) {
+    if ( i == null ) {
+      return -1.0;
+    }
+    return ( ( BinPackingSolution ) i ).getLevel();
+  }
+
+  private double horizontalFitness( Individual i ) {
     BinPackingSolution sol = ( BinPackingSolution ) ( i );
     Shape resultingSheet = sol.getResultingSheet();
     int trimW;
@@ -558,6 +792,26 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     totlW = resultingSheet.getNumCols();
 
     fitness = ( totlW - trimW ) / ( ( double ) ( totlW ) );
+
+    if ( sol.getPenaltyValue() != null ) {
+      penalty = sol.getPenaltyValue();
+    }
+
+    return fitness - penalty;
+  }
+
+  private double verticalFitenss( Individual i ) {
+    BinPackingSolution sol = ( BinPackingSolution ) ( i );
+    Shape resultingSheet = sol.getResultingSheet();
+    int trimH;
+    int totlH;
+    double fitness;
+    double penalty = 0.0;
+
+    trimH = resultingSheet.getTrimmedHeight();
+    totlH = resultingSheet.getNumRows();
+
+    fitness = ( totlH - trimH ) / ( ( double ) ( totlH ) );
 
     if ( sol.getPenaltyValue() != null ) {
       penalty = sol.getPenaltyValue();
@@ -633,6 +887,14 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     return ( result != null && result );
   }
+
+
+  @Override
+  public Individual[] getIndividualsOnBestFront() {
+    return levels.get( 0 ).toArray( new Individual[ levels.get( 0 ).size() ] );
+  }
+
+
 } /* Bin packing EA delegate */
 
 
@@ -704,6 +966,8 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
           loci,
           this.getRandomGene(
             loci,
+            ( ( BinPackingGene ) resultingSoluiton.getGene( loci ) ).getY()
+            + resultingSoluiton.getShapes()[ loci ].getLargestDimension(),
             bound
           ) );
       }
@@ -720,13 +984,12 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
     return newSolution;
   }
 
-  public Gene getRandomGene( int loci, int maxCol ) {
+  public Gene getRandomGene( int loci, int maxRow, int maxCol ) {
 
     /* Local variabes*/
     Random rnd;
     Shape tryShape;
     int minRow;
-    int maxRow;
     int tryRow;
 
     int minCol;
@@ -744,8 +1007,11 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
 
     /* Get random row */
     minRow = tryShape.getStartRow();
-    maxRow = this.problemDefinition.getSheetHeight()
-      - ( tryShape.getNumRows() - tryShape.getStartRow() );
+
+    if(  ( maxRow - minRow ) + 1 < 0 ) {
+      minRow = minRow;
+    }
+
     tryRow = randInt( rnd, minRow, maxRow );
 
     /* Get random Column */

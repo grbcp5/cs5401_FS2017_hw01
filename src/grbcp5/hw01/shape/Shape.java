@@ -40,6 +40,7 @@ public class Shape {
   private final int startRow;
   private final int startCol;
   private int trimmedWidth;
+  private int trimmedHeight;
 
   public Shape( String definition ) {
 
@@ -82,6 +83,7 @@ public class Shape {
     this.startCol = startCol;
 
     this.trimmedWidth = -1;
+    this.trimmedHeight = -1;
 
   }
 
@@ -157,11 +159,31 @@ public class Shape {
     return this.trimmedWidth;
   }
 
+  public int getTrimmedHeight() {
+    if( this.trimmedHeight == -1 )  {
+      this.trimmedHeight = calcTrimmedHeight();
+    }
+
+    return this.trimmedHeight;
+  }
+
   private int calcTrimmedWith() {
     for ( int c = this.getNumCols() - 1; c >= 0; c-- ) {
       for ( int r = 0; r < this.getNumRows(); r++ ) {
         if ( this.matrix[ r ][ c ] ) {
           return c;
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  private int calcTrimmedHeight() {
+    for ( int r = this.getNumRows() - 1; r >= 0; r-- ) {
+      for ( int c = 0; c < this.getNumCols(); c++ ) {
+        if ( this.matrix[ r ][ c ] ) {
+          return r;
         }
       }
     }
@@ -287,7 +309,7 @@ public class Shape {
 
         if ( innerShape.matrix[ r ][ c ] ) {
 
-          if( r + row >= 20 ) {
+          if( r + row >= matrix.length || c + col >= matrix[ 0 ].length ) {
             r = r;
           }
 

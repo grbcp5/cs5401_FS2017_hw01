@@ -27,15 +27,15 @@ public class EvolutionarySearch extends StochasticSearch {
     // create initial population
     population = delegate.getInitialPopulation();
 
+    delegate.handlePopulation( population );
+
     for ( Individual i :
       population ) {
       delegate.handleNewIndividual( i );
     }
 
-    delegate.handlePopulation( population );
-
-    // Evolve initial population
-    while ( delegate.shouldContinue() ) {
+    /* While there are remaining evals... */
+    while ( delegate.handlePopulation( population ) ) {
 
       /* Create children */
       try {
@@ -60,8 +60,6 @@ public class EvolutionarySearch extends StochasticSearch {
       /* Find survivors */
       population = getSurvivors( population, children );
 
-      /* Give new population to delegate */
-      delegate.handlePopulation( population );
     }
 
     return delegate.getBestIndividual();

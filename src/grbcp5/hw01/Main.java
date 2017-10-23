@@ -20,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
@@ -45,10 +46,7 @@ public class Main {
     long startTime;
     long endTime;
     long elapsedTime;
-    Individual runBest;
-    double runBestFitness;
-    Individual currentBest = null;
-    double currentBestFitness = -1;
+    Individual[] currentBestFront = null;
     PrintWriter logWriter;
     PrintWriter solWriter;
     Individual[] bestFront;
@@ -178,35 +176,24 @@ public class Main {
         System.out.println( "Solution " );
         System.out.println( sol.getResultingSheet() );
       }
-
-//      if ( runBestFitness > currentBestFitness ) {
-//        currentBestFitness = runBestFitness;
-//        currentBest = runBest;
-//
-//        System.out.println( "Run produced a better individual. + (" +
-//        currentBestFitness + ").");
-//        System.out.println( ( (BinPackingSolution)currentBest)
-//                              .getResultingSheet() );
-//      }
       printDashedln();
+
+      if( currentBestFront == null || currentBestFront.length <
+        bestFront.length ) {
+        currentBestFront = bestFront;
+      }
 
     }
 
     endTime = System.currentTimeMillis();
     elapsedTime = endTime - startTime;
     System.out.println( "Total time: " + elapsedTime );
-//    System.out.println( "Best individual (" + currentBestFitness + "): " );
-//    System.out.println(
-//      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
-//    );
-//    solWriter.println( currentBest.toString() );
-//    logWriter.println( "\n\nBest solution found had fitness: " +
-//                         currentBestFitness );
-//    logWriter.println( "\nBestSolution:" );
-//    logWriter.println(
-//      ( ( BinPackingSolution ) ( currentBest ) ).getResultingSheet()
-//    );
 
+    solWriter.println( currentBestFront.length + "\n" );
+    for ( Individual i : currentBestFront ) {
+      solWriter.println( i + "\n" );
+    }
+    
     logWriter.close();
     solWriter.close();
 

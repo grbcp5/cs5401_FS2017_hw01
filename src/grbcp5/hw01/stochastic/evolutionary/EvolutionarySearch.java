@@ -27,8 +27,6 @@ public class EvolutionarySearch extends StochasticSearch {
     // create initial population
     population = delegate.getInitialPopulation();
 
-    delegate.handlePopulation( population );
-
     for ( Individual i :
       population ) {
       delegate.handleNewIndividual( i );

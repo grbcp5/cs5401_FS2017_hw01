@@ -36,7 +36,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   private int currentDenom;
 
-  private int currentBestGeneration;
+  private double currentHBest;
+  private BinPackingSolution curHBest;
+  private double currentVBest;
+  private BinPackingSolution curVBest;
+
   private int prematureConverganceThreshold;
   private boolean converged;
 
@@ -85,12 +89,11 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     this.bound = this.problemDefinition.getSheetWidth() / this.currentDenom;
 
     this.currentBestFitness = -1;
-    this.currentBestGeneration = -1;
     this.population = new BinPackingSolution[ populationSize ];
 
     this.prematureConverganceThreshold =
       ( int ) parameters.get( "convergenceCriterion" ) +
-      GRandom.getInstance().nextInt( 10 );
+        GRandom.getInstance().nextInt( 10 );
     this.converged = false;
 
     this.penaltyCoefficient = -1;
@@ -99,6 +102,9 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     this.selfAdaptiveMutationRate =
       ( double ) ( this.parameters.get( "mutationRate" ) );
+
+    this.currentHBest = -1.0;
+    this.currentVBest = -1.0;
 
   }
 
@@ -184,15 +190,21 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     //      this.invalidIndividuals++;
     //    }
 
+    if ( horizontalFitness( sol ) > currentHBest ) {
+      currentHBest = horizontalFitness( sol );
+      curHBest = sol;
+    }
+
+    if ( verticalFitenss( sol ) > currentVBest ) {
+      currentVBest = verticalFitenss( sol );
+      curVBest = sol;
+    }
+
     newBestLevel = addIndividualToLevel( sol );
 
-    if( newBestLevel ) {
+    if ( newBestLevel ) {
 
       this.getLastGenerationWithBestChange = this.numGenerations;
-//      System.out.print( "Added new level: " );
-//      System.out.print( "Horizontal: " + horizontalFitness( sol ) );
-//      System.out.println( "Vertical: " + verticalFitenss( sol ) );
-//      System.out.println( sol.getResultingSheet() );
 
     }
 
@@ -237,17 +249,21 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     placed = false;
 
+    if( this.levels == null ) {
+      this.levels = new LinkedList<>();
+    }
+
     newBestLevel = true;
     /* See if this individual dominates everything */
-    for( int i = 0; this.levels.size() > 0 && i < this.levels.get( 0 ).size();
-         i++ ) {
-      if( !doesOneDominateTwo( sol, levels.get( 0 ).get( i ) ) ) {
+    for ( int i = 0; this.levels.size() > 0 && i < this.levels.get( 0 ).size();
+          i++ ) {
+      if ( !doesOneDominateTwo( sol, levels.get( 0 ).get( i ) ) ) {
         newBestLevel = false;
         break;
       }
     }
 
-    if( newBestLevel ) {
+    if ( newBestLevel ) {
 
       levels.add( 0, new LinkedList<>() );
       sol.setLevel( 0 );
@@ -388,6 +404,10 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     // Local variables
     double sum;
+    double hSum;
+    double hAvg;
+    double vSum;
+    double vAvg;
     int run;
 
     // Initialize
@@ -408,16 +428,32 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
     }
 
-    // Log end of generation
-    System.out.println( "Run " + run + ": End of generation: " + this
-      .numGenerations + " Evals: " + this.numNewIndividuals );
+    // Find averages
+    vSum = 0.0;
+    hSum = 0.0;
+    for ( int i = 0; i < pop.length; i++ ) {
+      vSum = verticalFitenss( pop[ i ] );
+      hSum = horizontalFitness( pop[ i ] );
+    }
+    vAvg = vSum / pop.length;
+    hAvg = hSum / pop.length;
 
-    // TODO: Log subfitenss best and average
+    // Log end of generation
+    System.out.println(
+      "Run " + run + ": End of generation: " + this.numGenerations +
+        " Evals: " + this.numNewIndividuals +
+        " Horizontal averge: " + hAvg +
+        " best: " + this.currentHBest +
+        " Vertical average: " + vAvg +
+        " best: " + this.currentVBest );
 
     // Print to the log writer
     this.logWriter.println(
       this.numNewIndividuals + "\t" +
-        this.currentBestFitness
+        hAvg + "\t" +
+        currentHBest + "\t" +
+        vAvg + "\t" +
+        currentVBest
     );
 
     // Increate number of generations
@@ -442,7 +478,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     }
 
     // Handle for premature convergance
-    if ( this.converged && Main.debug() ) {
+    if ( this.numGenerations == this.prematureConverganceThreshold ) {
 
       System.out.println( "Population: " );
       for ( int i = 0; i < pop.length; i++ ) {
@@ -455,17 +491,18 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
       remainingGenerations =
         ( ( ( int ) ( parameters.get( "fitnessEvals" ) ) ) - this
-          .numNewIndividuals ) / this.populationSize;
+          .numNewIndividuals ) / this.getNumChildren();
 
       // Fill out the rest of the log
       for ( int i = 1; i <= remainingGenerations; i++ ) {
 
-        // TODO: Fill out average
         // Print to the log writer
         this.logWriter.println(
-          this.numNewIndividuals + ( i * this.populationSize ) + "\t" +
-            /*this.averageFitness + "\t" +*/
-            this.currentBestFitness
+          this.numNewIndividuals + ( i * this.getNumChildren() ) + "\t" +
+            hAvg + "\t" +
+            currentHBest + "\t" +
+            vAvg + "\t" +
+            currentVBest
         );
 
       }
@@ -496,69 +533,68 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   public void removeShapeFromSheet( BinPackingSolution sol, int shapeNum ) {
 
-        Shape sheet;
-        boolean[][] matrix;
-        BinPackingGene gene;
-        Shape shapeToRemove;
-        int row;
-        int col;
-        int rot;
+    Shape sheet;
+    boolean[][] matrix;
+    BinPackingGene gene;
+    Shape shapeToRemove;
+    int row;
+    int col;
+    int rot;
 
-        sheet = sol.getResultingSheet();
-        matrix = sheet.getMatrix();
-        gene = ( BinPackingGene )sol.getGene( shapeNum );
-        rot = gene.getRotation();
-        row = gene.getY() -
-          sol.getShapes()[ shapeNum ].rotate( rot ).getStartRow();
-        col = gene.getX() -
-          sol.getShapes()[ shapeNum ].rotate( rot ).getStartCol();
-        shapeToRemove = sol.getShapes()[ shapeNum ].rotate( rot );
+    sheet = sol.getResultingSheet();
+    matrix = sheet.getMatrix();
+    gene = ( BinPackingGene ) sol.getGene( shapeNum );
+    rot = gene.getRotation();
+    row = gene.getY() -
+      sol.getShapes()[ shapeNum ].rotate( rot ).getStartRow();
+    col = gene.getX() -
+      sol.getShapes()[ shapeNum ].rotate( rot ).getStartCol();
+    shapeToRemove = sol.getShapes()[ shapeNum ].rotate( rot );
 
-        for( int r = 0; r < shapeToRemove.getNumRows(); r++ ) {
-          for( int c = 0; c < shapeToRemove.getNumCols(); c++ ) {
-            if( shapeToRemove.getMatrix()[ r ][ c ] ) {
+    for ( int r = 0; r < shapeToRemove.getNumRows(); r++ ) {
+      for ( int c = 0; c < shapeToRemove.getNumCols(); c++ ) {
+        if ( shapeToRemove.getMatrix()[ r ][ c ] ) {
 
-              if( row + r >= matrix.length || col + c >= matrix[ 0 ].length ) {
-                r = r;
-              }
-
-              matrix[ row + r ][ col + c ] = false;
-            }
+          if ( row + r >= matrix.length || col + c >= matrix[ 0 ].length ) {
+            r = r;
           }
+
+          matrix[ row + r ][ col + c ] = false;
         }
+      }
+    }
 
-        sol.setSheet( new Shape( matrix, -1, -1  ) );
+    sol.setSheet( new Shape( matrix, -1, -1 ) );
 
 
-
-//    Shape sheet = sol.getResultingSheet();
-//    Shape newSheet = new Shape(
-//      new boolean[ sheet.getNumRows() ][ sheet.getNumCols() ],
-//      -1,
-//      -1
-//    );
-//    BinPackingGene gene;
-//
-//    for ( int i = 0; i < sol.getShapes().length; i++ ) {
-//
-//      if ( i != shapeNum ) {
-//
-//        gene = ( BinPackingGene ) sol.getGene( i );
-//
-//        newSheet = newSheet.eatWithoutConcern(
-//          sol.getShapes()[ i ].rotate( gene.getRotation() ),
-//          gene.getY() - sol.getShapes()[ i ].rotate( gene.getRotation() )
-//                                            .getStartRow(),
-//          gene.getX() - sol.getShapes()[ i ].rotate( gene.getRotation() )
-//                                            .getStartCol()
-//        );
-//      }
-//
-//
-//
-//    }
-//
-//    sol.setSheet( newSheet );
+    //    Shape sheet = sol.getResultingSheet();
+    //    Shape newSheet = new Shape(
+    //      new boolean[ sheet.getNumRows() ][ sheet.getNumCols() ],
+    //      -1,
+    //      -1
+    //    );
+    //    BinPackingGene gene;
+    //
+    //    for ( int i = 0; i < sol.getShapes().length; i++ ) {
+    //
+    //      if ( i != shapeNum ) {
+    //
+    //        gene = ( BinPackingGene ) sol.getGene( i );
+    //
+    //        newSheet = newSheet.eatWithoutConcern(
+    //          sol.getShapes()[ i ].rotate( gene.getRotation() ),
+    //          gene.getY() - sol.getShapes()[ i ].rotate( gene.getRotation() )
+    //                                            .getStartRow(),
+    //          gene.getX() - sol.getShapes()[ i ].rotate( gene.getRotation() )
+    //                                            .getStartCol()
+    //        );
+    //      }
+    //
+    //
+    //
+    //    }
+    //
+    //    sol.setSheet( newSheet );
 
   }
 
@@ -586,7 +622,7 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
           randomSearchDelegate.getRandomGene(
             loci,
             ( ( BinPackingGene ) result.getGene( loci ) ).getY()
-            + result.getShapes()[ loci ].getLargestDimension(),
+              + result.getShapes()[ loci ].getLargestDimension(),
             this.getBound()
           )
         );
@@ -864,14 +900,14 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
     Double fitness1 = this.fitness( sol1 );
     Double fitness2 = this.fitness( sol2 );
 
-    if( fitness1 != fitness2 ) {
+    if ( fitness1 != fitness2 ) {
       return fitness1.compareTo( fitness2 );
     }
 
     fitness1 = verticalFitenss( sol1 );
     fitness2 = verticalFitenss( sol2 );
 
-    if( fitness1 != fitness2 ) {
+    if ( fitness1 != fitness2 ) {
       return fitness1.compareTo( fitness2 );
     }
 
@@ -941,6 +977,8 @@ public class BinPackingEADelegate extends EvolutionaryDelegate {
 
   @Override
   public Individual[] getIndividualsOnBestFront() {
+    levels.get( 0 ).add( curHBest );
+    levels.get( 0 ).add( curVBest );
     return levels.get( 0 ).toArray( new Individual[ levels.get( 0 ).size() ] );
   }
 
@@ -1017,7 +1055,7 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
           this.getRandomGene(
             loci,
             ( ( BinPackingGene ) resultingSoluiton.getGene( loci ) ).getY()
-            + resultingSoluiton.getShapes()[ loci ].getLargestDimension(),
+              + resultingSoluiton.getShapes()[ loci ].getLargestDimension(),
             bound
           ) );
       }
@@ -1058,7 +1096,7 @@ class RandomSearchDelegateForEADelegate extends BinPackingRandomSearchDelegate {
     /* Get random row */
     minRow = tryShape.getStartRow();
 
-    if(  ( maxRow - minRow ) + 1 < 0 ) {
+    if ( ( maxRow - minRow ) + 1 < 0 ) {
       minRow = minRow;
     }
 

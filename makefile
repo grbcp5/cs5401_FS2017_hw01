@@ -22,12 +22,12 @@ quickRun:
 	./run.sh config/1d/100Config3.xml config/100Shapes.txt
 
 100ComplexConfig1:
-	./run.sh config/1d/100ComplexConfig1.xml config/100ComplexShapes.txt
+	./run.sh config/1d/100ComplexConfig1.xml config/100ShapesComplex.txt
 
 100ComplexConfig2:
-	./run.sh config/1d/100ComplexConfig2.xml config/100ComplexShapes.txt
+	./run.sh config/1d/100ComplexConfig2.xml config/100ShapesComplex.txt
 
 100ComplexConfig3:
-	./run.sh config/1d/100ComplexConfig3.xml config/100ComplexShapes.txts
+	./run.sh config/1d/100ComplexConfig3.xml config/100ShapesComplex.txts
 
 

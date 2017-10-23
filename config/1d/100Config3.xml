@@ -25,4 +25,15 @@
   <multiaryOperator dataType="String">nPointCrossover</multiaryOperator>
   <numCrossoverPoints dataType="Integer">1</numCrossoverPoints>
 
+  <!-- Assignment 1C Configurations -->
+  <constraintSatisfaction dataType="String">repair</constraintSatisfaction>
+  <penaltyCoefficient dataType="Double">0.33</penaltyCoefficient>
+
+  <survivalStrategy dataType="String">Plus</survivalStrategy>
+
+  <selfAdaptiveMutationRate dataType="Boolean">false</selfAdaptiveMutationRate>
+
+
+
+
 </config>

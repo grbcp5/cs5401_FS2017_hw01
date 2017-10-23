@@ -3,30 +3,31 @@ default: quickRun
 quickRun:
 	./run.sh config/EAQuickRun.xml config/50Shapes.txt
 
-submit_1b_50:
-	./run.sh config/submitRun config/50Shapes.txt
+50Config1:
+	./run.sh config/1d/50Config1.xml config/50Shapes.txt
 
-submit_1b_100:
-	./run.sh config/submitRun config/100Shapes.txt
+50Config2:
+	./run.sh config/1d/50Config2.xml config/50Shapes.txt
 
-submit_1b_100Complex:
-	./run.sh config/submitRun config/100ShapesComplex.txt
+50Config3:
+	./run.sh config/1d/50Config3.xml config/50Shapes.txt
 
-penalty50:
-	./run.sh config/penalty50.xml config/50Shapes.txt
+100Config1:
+	./run.sh config/1d/100Config1.xml config/100Shapes.txt
 
-penalty100:
-	./run.sh config/penalty100.xml config/100Shapes.txt
+100Config2:
+	./run.sh config/1d/100Config2.xml config/100Shapes.txt
 
-penalty100Complex:
-	./run.sh config/penalty100Complex.xml config/100ShapesComplex.txt
+100Config3:
+	./run.sh config/1d/100Config3.xml config/100Shapes.txt
 
-selfAdaptive50:
-	./run.sh config/selfAdaptive50.xml config/50Shapes.txt
+100ComplexConfig1:
+	./run.sh config/1d/100ComplexConfig1.xml config/100ComplexShapes.txt
 
-selfAdaptive100:
-	./run.sh config/selfAdaptive100.xml config/100Shapes.txt
+100ComplexConfig2:
+	./run.sh config/1d/100ComplexConfig2.xml config/100ComplexShapes.txt
 
-selfAdaptive100Complex:
-	./run.sh config/selfAdaptive100Complex.xml config/100ShapesComplex.txt
+100ComplexConfig3:
+	./run.sh config/1d/100ComplexConfig3.xml config/100ComplexShapes.txts
+
 
